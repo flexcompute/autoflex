@@ -23,21 +23,23 @@ classifiers = [
     "Topic :: Documentation :: Sphinx",
     "Topic :: Utilities"
 ]
+packages = [
+    { include = "sphinxcontrib", from = "." }
+]
 
 
 [tool.poetry.dependencies]
-python = "^3.6"
-pbr = "^5.5.1"
+python = ">=3.9"
+sphinx = {version="^7"}
 
+# Testing and linting
 pytest = {version="*", optional=true}
-sphinx = {version="*", optional=true}
 mypy = {version="*", optional=true}
-flake8 ={version="*", optional=true}
+flake8 = {version="*", optional=true}
 
 [tool.poetry.extras]
 develop = [
     "pytest",
-    "sphinx",
     "mypy",
     "flake8"
 ]
