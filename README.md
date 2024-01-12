@@ -10,6 +10,32 @@ When we have multiple classes, and multiple inherited classes, it is hard to kee
 
 This extension aims to do that.
 
+### Objectives
+
+- Improve the API template for `autodoc` which I don't think is good enough.
+- For each class, such as `tidy3d` complex classes, properly generate a nicer template of the parameters and methods that extends how autodoc works.
+- Generate an index of each API directive that can be easily searched by corresponding themes like the `sphinx_book_theme`.
+- For inherited classes, have the option to easily define the methods and parameters that we want to generate documentation for.
+- Have the option to generate custom HTML relevant to each class in a way defined by the class docstring.
+- Make sure the docstrings don't interfere with help messages such as ipython, etc. (Maybe explore how to compile relevant docstrings into the help messages).
+
+**API Docstrings Improvements**
+
+When we have highly complex classes that have multiple inherited parameters, it is desired to have a clear definition of each specific class and its parameters, types and defaults. Whilst this can be done manually for an individual class or method, as a project increases in complexity, it is desired to understand the relevant docstrings for each class and method.
+
+## Usage
+
+The idea is that we can use the `autoflex` directive to improve the data structure generated during the `autosummary` process instead of the `automodule` or `autoclass` directive.
+
+Basic Example:
+
+```rst
+.. autoflex:: somepackage.MyClass
+```
+
+
+
+
 
 ## Links
 

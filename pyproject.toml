@@ -30,7 +30,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.9"
+docutils = ">=0.16,<1.0"
+pydantic = {version="^2"}
 sphinx = {version="^7"}
+
 
 # Testing and linting
 pytest = {version="*", optional=true}
