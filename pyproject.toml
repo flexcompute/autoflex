@@ -35,13 +35,15 @@ pydantic = {version="^2"}
 sphinx = {version="^7"}
 
 
-# Testing and linting
+# Testing, linting and docs
+furo = {version="*", optional=true}
 pytest = {version="*", optional=true}
 mypy = {version="*", optional=true}
 flake8 = {version="*", optional=true}
 
 [tool.poetry.extras]
 develop = [
+    "furo",
     "pytest",
     "mypy",
     "flake8"
