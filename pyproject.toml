@@ -33,6 +33,7 @@ python = ">=3.9"
 docutils = ">=0.16,<1.0"
 pydantic = {version="^2"}
 sphinx = {version="^7"}
+autodoc_pydantic = {version="^0.2.0"}
 
 
 # Testing, linting and docs
