@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "sphinxcontrib-autoflex"
+name = "autoflex"
 version = "0.0.1"
-description = "A flexible, nicer way of generating API docs without requiring custom docstrings."
-authors = ["daquintero <dario a quintero at gmail dot com>"]
+description = "A flexible, elegant way to structure API docs."
+authors = ["daquintero <dario a quintero at gmail dot com>", "dario at flexcompute dot com"]
 homepage = "http://www.sphinx-doc.org/"
 license = "BSD" # Replace with your project's license, if different
 classifiers = [
@@ -15,36 +15,34 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Documentation",
     "Topic :: Documentation :: Sphinx",
     "Topic :: Utilities"
 ]
 packages = [
-    { include = "sphinxcontrib", from = "." }
+    { include = "autoflex", from = "." }
 ]
 
 
 [tool.poetry.dependencies]
-python = ">=3.9"
+python = ">=3.10"
 docutils = ">=0.16,<1.0"
 pydantic = {version="^2"}
 sphinx = {version="^7"}
-autodoc_pydantic = {version="^0.2.0"}
 
 
 # Testing, linting and docs
-furo = {version="*", optional=true}
+sphinx_book_theme = {version = "*", optional = true}
 pytest = {version="*", optional=true}
 mypy = {version="*", optional=true}
 flake8 = {version="*", optional=true}
 
 [tool.poetry.extras]
-develop = [
-    "furo",
+dev = [
+    "sphinx_book_theme",
     "pytest",
     "mypy",
     "flake8"
@@ -55,7 +53,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 show_column_numbers = true
 show_error_context = true
 ignore_missing_imports = true

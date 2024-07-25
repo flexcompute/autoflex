@@ -1,0 +1,5 @@
+Example
+
+.. autoflex::
+
+    Hi

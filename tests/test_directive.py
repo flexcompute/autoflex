@@ -1,3 +1,3 @@
 def test_import():
-    from sphinxcontrib.autoflex import AutoFlexDirective
+    from autoflex import AutoFlexDirective
     AutoFlexDirective()

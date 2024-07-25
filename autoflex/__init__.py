@@ -19,7 +19,7 @@ __email__ = "dario a quintero at gmail dot com"
 
 def setup(app) -> Dict[str, Any]:
     """Add icon node to the sphinx builder."""
-    install_verification()
+    print("Started loading `autoflex` extension.")
     app.add_directive("autoflex", AutoFlexDirective)
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
@@ -37,6 +37,7 @@ def setup(app) -> Dict[str, Any]:
     # app.connect("config-inited", font_handler.add_latex_font)
     # app.connect("config-inited", font_handler.enforce_xelatex)
     # app.connect("builder-inited", font_handler.add_latex_font_files)
+    print("Finished loaded `autoflex` extension.")
 
     return {
         "version": __version__,
