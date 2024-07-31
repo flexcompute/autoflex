@@ -27,6 +27,12 @@ When we have highly complex classes that have multiple inherited parameters, it 
 
 The idea is that we can use the `autoflex` directive to improve the data structure generated during the `autosummary` process instead of the `automodule` or `autoclass` directive.
 
+Build the local documentation basically:
+
+```bash
+poetry run python -m sphinx docs/ _docs/
+```
+
 Basic Example:
 
 ```rst
