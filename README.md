@@ -1,4 +1,4 @@
-# `sphinxcontrib-autoflex`
+# `autoflex` Sphinx Documentation Extension
 
 A flexible, nicer way of generating API docs without requiring custom docstrings.
 
@@ -12,7 +12,7 @@ This extension aims to do that.
 
 ### Objectives
 
-- Improve the API template for `autodoc` which I don't think is good enough.
+- Improve the API template for `autodoc` which can be limited.
 - For each class, such as `tidy3d` complex classes, properly generate a nicer template of the parameters and methods that extends how autodoc works.
 - Generate an index of each API directive that can be easily searched by corresponding themes like the `sphinx_book_theme`.
 - For inherited classes, have the option to easily define the methods and parameters that we want to generate documentation for.
