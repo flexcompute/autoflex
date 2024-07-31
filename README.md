@@ -27,7 +27,12 @@ When we have highly complex classes that have multiple inherited parameters, it 
 
 The idea is that we can use the `autoflex` directive to improve the data structure generated during the `autosummary` process instead of the `automodule` or `autoclass` directive.
 
-Build the local documentation basically:
+Install the package in `development` mode:
+```bash
+poetry install -E dev
+```
+
+Build the local basic documentation with the extension linked:
 
 ```bash
 poetry run python -m sphinx docs/ _docs/
@@ -36,7 +41,7 @@ poetry run python -m sphinx docs/ _docs/
 Basic Example:
 
 ```rst
-.. autoflex:: somepackage.MyClass
+.. autoflex:: somepackage.MyClass # CURRENTLY NOT WORKING
 ```
 
 
