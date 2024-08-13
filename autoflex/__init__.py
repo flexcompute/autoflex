@@ -10,7 +10,7 @@
 
 from typing import Any, Dict
 from .install import install_verification
-from .directives import AutoFlexDirective
+from autoflex.directives import AutoFlex, FlexTree
 
 __version__ = "0.0.1"
 __author__ = "Dario Quintero Dominguez"
@@ -20,7 +20,8 @@ __email__ = "dario a quintero at gmail dot com"
 def setup(app) -> Dict[str, Any]:
     """Add icon node to the sphinx builder."""
     print("Started loading `autoflex` extension.")
-    app.add_directive("autoflex", AutoFlexDirective)
+    app.add_directive("autoflex", AutoFlex)
+    app.add_directive("flextree", FlexTree)
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
     # app.add_role("icon", Icon())
