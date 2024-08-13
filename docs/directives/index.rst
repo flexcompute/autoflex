@@ -1,0 +1,4 @@
+.. flextree::
+
+    autoflex
+    flextree
