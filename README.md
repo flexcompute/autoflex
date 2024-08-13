@@ -44,10 +44,6 @@ Basic Example:
 .. autoflex:: somepackage.MyClass # CURRENTLY NOT WORKING
 ```
 
-
-
-
-
 ## Links
 
 -   Source: <https://github.com/sphinx-contrib/sphinxcontrib-autoflex />
