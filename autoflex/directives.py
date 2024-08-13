@@ -3,7 +3,7 @@ from docutils.parsers import rst
 from typing import Any
 
 
-class AutoFlexDirective(pydantic.BaseModel, rst.Directive):
+class AutoFlexDirective(rst.Directive):
     """
     Extension of the ``.. automodule::`` directive.
 
@@ -17,20 +17,23 @@ class AutoFlexDirective(pydantic.BaseModel, rst.Directive):
     """
 
     # Directive information
-    name: str = "autoflex"
-    arguments: Any = None
-    options: Any = None
-    content: Any = None
-    lineno: Any = None
-    content_offset: Any = None
-    block_text: Any = None
-    state: Any = None
-    state_machine: Any = None
-    reporter: Any = None
+    has_content: bool = True
 
-    required_arguments: int = 0
-    optional_arguments: int = 0
+    # name: str = "autoflex"
+    # arguments: Any = None
+    # options: Any = None
+    # content: Any = None
+    # lineno: Any = None
+    # content_offset: Any = None
+    # block_text: Any = None
+    # state: Any = None
+    # state_machine: Any = None
+    # reporter: Any = None
+    #
+    # required_arguments: int = 1
+    # optional_arguments: int = 0
 
     def run(self):
         print("AutoFlex directive running.")
         print(self.name)
+        return []
