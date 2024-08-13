@@ -1,8 +1,7 @@
+Examples
+========
 
-.. code:: bash
+.. flextree::
 
-    poetry run python -m sphinx docs/ _docs/
-
-.. include:: demo.rst
-
-.. autoflex::
+    demo
+    tidy3d

@@ -1,6 +1,6 @@
-**************
-``autoflex``
-**************
+**********************
+autoflex
+**********************
 
 A flexible, nicer way of generating API docs without requiring custom docstrings.
 
@@ -33,6 +33,7 @@ Indices and tables
 
    get_started
    directives/index
+   examples/index
    development
 
 

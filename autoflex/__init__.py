@@ -9,8 +9,11 @@
 """
 
 from typing import Any, Dict
+import pathlib
+
 from .install import install_verification
 from autoflex.directives import AutoFlex, FlexTree
+from autoflex.styles.setup import copy_autoflex_styles_to_static
 
 __version__ = "0.0.1"
 __author__ = "Dario Quintero Dominguez"
@@ -18,27 +21,22 @@ __email__ = "dario a quintero at gmail dot com"
 
 
 def setup(app) -> Dict[str, Any]:
-    """Add icon node to the sphinx builder."""
+    """
+    Configure the ``autoflex`` extension onto your project.
+    """
     print("Started loading `autoflex` extension.")
+    # DIRECTIVES
     app.add_directive("autoflex", AutoFlex)
     app.add_directive("flextree", FlexTree)
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
     # app.add_role("icon", Icon())
-    #
-    # # load the font
-    # font_handler = Fontawesome()
-    #
-    # # install html related files
-    # app.add_css_file(str(font_handler.css_file.resolve()))
-    # app.add_js_file(str(font_handler.js_file.resolve()))
-    #
-    # # install latex files
-    # app.add_latex_package("fontspec")
-    # app.connect("config-inited", font_handler.add_latex_font)
-    # app.connect("config-inited", font_handler.enforce_xelatex)
-    # app.connect("builder-inited", font_handler.add_latex_font_files)
-    print("Finished loaded `autoflex` extension.")
+
+    # STYLES
+    app.connect('build-finished', copy_autoflex_styles_to_static)
+    app.add_css_file("css/autoflex.css")
+
+    print("Finished loading `autoflex` extension.")
 
     return {
         "version": __version__,
