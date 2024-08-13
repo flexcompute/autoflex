@@ -1,5 +1,5 @@
 ``autoflex``
-============
+------------
 
 One of the main complexities we have is that managing `rst` code blocks in docstrings is complicated. It involves manually writing and updating parameter descriptions rather than focusing on the actual docstrings.
 

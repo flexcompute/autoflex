@@ -28,7 +28,7 @@ packages = [
 
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.10, <3.12"
 docutils = ">=0.16,<1.0"
 pydantic = {version="^2"}
 sphinx = {version="^7"}
@@ -37,31 +37,19 @@ sphinx = {version="^7"}
 # Testing, linting and docs
 sphinx_book_theme = {version = "*", optional = true}
 pytest = {version="*", optional=true}
-mypy = {version="*", optional=true}
-flake8 = {version="*", optional=true}
+
+# For custom class verification with our existing classes
+tidy3d = {version="*", optional=true}
+
 
 [tool.poetry.extras]
 dev = [
     "sphinx_book_theme",
     "pytest",
-    "mypy",
-    "flake8"
+    "tidy3d",
+    "flow360"
 ]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.mypy]
-python_version = "3.10"
-show_column_numbers = true
-show_error_context = true
-ignore_missing_imports = true
-follow_imports = "skip"
-incremental = true
-check_untyped_defs = true
-warn_unused_ignores = true
-
-[tool.flake8]
-show-source = true
-builtins = "unicode"
