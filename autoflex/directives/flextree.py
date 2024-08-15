@@ -1,4 +1,6 @@
+from docutils.parsers.rst import Directive
 from sphinx.directives.other import TocTree
+from docutils import nodes
 
 
 class FlexTree(TocTree):
@@ -37,6 +39,7 @@ class FlexTree(TocTree):
     has_content: bool = True
 
     name: str = "flextree"
+
     # arguments: Any = None
     # options: Any = None
     # content: Any = None
@@ -51,5 +54,42 @@ class FlexTree(TocTree):
     # optional_arguments: int = 0
 
     def run(self):
-        print("Generating Flextree.")
-        return super().run()
+        # Process the toctree as usual
+        env = self.state.document.settings.env
+        titles = TocTree.run(self)
+
+        # Additional processing to handle the description field
+        descriptions = self.options.get('descriptions', [])
+        description_nodes = []
+
+        # Create custom nodes with descriptions
+        for title, desc in zip(titles, descriptions):
+            title_node = nodes.Text(title, title)
+            description_node = nodes.Text(desc, desc)
+            description_nodes.append((title_node, description_node))
+
+        # Create a custom node to store title and description
+        custom_node = desc_tocnode()
+        custom_node['entries'] = description_nodes
+
+        return [custom_node]
+
+
+class desc_tocnode(nodes.General, nodes.Element):
+    pass
+
+
+def visit_desc_tocnode_html(self, node):
+    self.body.append('<div class="custom-toctree">')
+
+
+def depart_desc_tocnode_html(self, node):
+    self.body.append('</div>')
+
+
+def visit_desc_tocnode(self, node):
+    pass
+
+
+def depart_desc_tocnode(self, node):
+    pass

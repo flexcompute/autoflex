@@ -14,6 +14,7 @@ import pathlib
 from .install import install_verification
 from autoflex.directives import AutoFlex, FlexTree
 from autoflex.styles.setup import copy_autoflex_styles_to_static
+from autoflex.directives.flextree import desc_tocnode, depart_desc_tocnode, depart_desc_tocnode_html, visit_desc_tocnode_html, visit_desc_tocnode
 
 __version__ = "0.0.1"
 __author__ = "Dario Quintero Dominguez"
@@ -28,6 +29,10 @@ def setup(app) -> Dict[str, Any]:
     # DIRECTIVES
     app.add_directive("autoflex", AutoFlex)
     app.add_directive("flextree", FlexTree)
+    app.add_node(desc_tocnode,
+                 html=(visit_desc_tocnode_html, depart_desc_tocnode_html),
+                 latex=(visit_desc_tocnode, depart_desc_tocnode),
+                 text=(visit_desc_tocnode, depart_desc_tocnode))
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
     # app.add_role("icon", Icon())

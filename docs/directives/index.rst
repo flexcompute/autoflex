@@ -6,7 +6,7 @@ Directives
 .. include:: flexsummary.rst
 
 .. flextree::
-   :hidden:
+   :descriptions: Desc 1, Desc 2
 
    autoflex
    flexsummary
