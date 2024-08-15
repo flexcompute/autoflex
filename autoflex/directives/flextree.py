@@ -36,7 +36,7 @@ class FlexTree(TocTree):
     # Directive information
     has_content: bool = True
 
-    # name: str = "autoflex"
+    name: str = "flextree"
     # arguments: Any = None
     # options: Any = None
     # content: Any = None
