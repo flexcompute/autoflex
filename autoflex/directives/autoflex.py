@@ -7,7 +7,7 @@ from docutils.parsers.rst import directives
 from sphinx.ext.autodoc import ClassDocumenter
 from sphinx.util.docutils import SphinxDirective
 
-class AutoFlex(ClassDocumenter):
+class AutoFlex(SphinxDirective):
     """
     Extension of the ``.. automodule::`` directive.
 
@@ -32,5 +32,7 @@ class AutoFlex(ClassDocumenter):
 
     has_content = True
 
+    def run(self):
+        return []
 
 
