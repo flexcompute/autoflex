@@ -124,9 +124,6 @@ class FlexTreeDirective(SphinxDirective):
         suffixes = self.config.source_suffix
         current_docname = self.env.docname
 
-        logger.info("current_docname")
-        logger.info(current_docname)
-
         glob = toctree['glob']
 
         # glob target documents
@@ -140,6 +137,9 @@ class FlexTreeDirective(SphinxDirective):
             if not entry:
                 continue
 
+            # Here we need to add the extended parsing, whilst maintaining the existing titles, and being flexible
+            # enough for the descriptions and images
+            # TODO here
 
             # look for explicit titles ("Some Title <document>")
             explicit = explicit_title_re.match(entry)
