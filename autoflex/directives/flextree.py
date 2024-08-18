@@ -54,6 +54,7 @@ class FlexTree(TocTree):
     # optional_arguments: int = 0
 
     def run(self):
+        print(TocTree.run(self))
         return TocTree.run(self)
 
 
