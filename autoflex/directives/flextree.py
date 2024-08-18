@@ -59,64 +59,37 @@ class FlexTreeDirective(TocTree):
     # optional_arguments: int = 0
 
     def run(self):
+        # Initialize the final list of nodes to return
+        final_nodes = []
+
+        # Iterate through the content of the directive
+        for entry in self.content:
+            if '/' in entry:
+                # Split the entry into the page name and its description
+                parts = entry.split(':description:')
+                page = parts[0].strip()
+                description = parts[1].strip() if len(parts) > 1 else ""
+
+                # Create a reference node for the page
+                reference_node = reference(refuri=page, text=page)
+
+                # Wrap it in a paragraph or list item node
+                para_node = paragraph()
+                para_node += reference_node
+
+                # If a description is provided, add it below the page link
+                if description:
+                    description_node = paragraph(text=description)
+                    para_node += description_node
+
+                final_nodes.append(para_node)
+
         # Process the toctree as usual
         toctree_nodes = super().run()
 
-        # Initialize the final list of nodes to return
-        final_nodes = []
-        current_page = None
-        current_metadata = {}
-
-        for line in self.content:
-            line = line.strip()
-
-            if not line:
-                continue
-
-            if '/' in line and ':description:' not in line:
-                # New toctree entry found, handle the previous one first
-                if current_page:
-                    final_nodes.append(self._create_node(current_page, current_metadata))
-
-                # Start a new entry
-                current_page = line
-                current_metadata = {}
-
-            elif line.startswith(':description:'):
-                current_metadata['description'] = line[len(':description:'):].strip()
-
-            elif line.startswith(':author:'):
-                current_metadata['author'] = line[len(':author:'):].strip()
-
-            elif line.startswith(':date:'):
-                current_metadata['date'] = line[len(':date:'):].strip()
-
-        # Don't forget to add the last entry
-        if current_page:
-            final_nodes.append(self._create_node(current_page, current_metadata))
-
-        # Combine toctree nodes with our custom metadata nodes
+        # Combine toctree nodes with our description nodes
         return toctree_nodes + final_nodes
 
-    def _create_node(self, page, metadata):
-        """Helper function to create a node for the given page and metadata."""
-        para_node = paragraph()
-        reference_node = reference(refuri=page, text=page)
-        para_node += reference_node
-
-        if 'description' in metadata:
-            description_node = paragraph(text=metadata['description'])
-            para_node += description_node
-
-        if 'author' in metadata:
-            author_node = paragraph(text=f"Author: {metadata['author']}")
-            para_node += author_node
-
-        if 'date' in metadata:
-            date_node = paragraph(text=f"Date: {metadata['date']}")
-            para_node += date_node
-
-        return para_node
 
 
 class FlexTreeNode(compound):
