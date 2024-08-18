@@ -60,3 +60,24 @@ A very good way to understand how to extend nodes is to go deeper into the way t
 One of the main complexities is that we don't want the ``flextree`` extension interfering with the theme settings either,
 so this involves understanding where it goes wrong in terms of the interface point. We probably want to find a
 theme-agnostic implementation of this, but this may prove tricky.
+
+An example of a toctree by default is:
+
+.. code::
+
+    DEBUG:autoflex.directives.flextree:[<compound classes="toctree-wrapper"><toctree caption="None" entries="[(None, 'get_started'), (None, 'directives/index'), (None, 'examples/index'), (None, 'development')]" glob="False" hidden="False" includefiles="['get_started', 'directives/index', 'examples/index', 'development']" includehidden="False" maxdepth="2" numbered="0" parent="index" titlesonly="False"/></compound>]
+
+This means that in order to update the ``toctree`` functionality, we need to extend the compound class.
+We could, for example, simply overwrite the styling of the generated class and in css or javascript, add the
+corresponding functionality we desire to render.
+
+When this compound class gets compiled, it generates a ``html`` in the form:
+
+.. code:: html
+
+    <div class="toctree-wrapper compound">
+    <ul>
+    <li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a><ul>
+    <li class="toctree-l2"><a class="reference internal" href="get_started.html#install">Install</a></li>
+    </ul>
+

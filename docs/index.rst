@@ -34,6 +34,7 @@ Indices and tables
    get_started
    directives/index
    examples/index
+   configuration/index
    development
 
 

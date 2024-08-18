@@ -2,6 +2,7 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+from autoflex.directives.flextree import logger
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -29,3 +30,5 @@ exclude_patterns = []
 
 html_theme = "sphinx_book_theme"
 html_static_path = []
+
+autoflex_logging = True

@@ -1,3 +1,3 @@
 from .autoflex import AutoFlex
-from .flextree import FlexTree
+from .flextree import FlexTreeDirective
 from .flexsummary import FlexSummary
