@@ -80,6 +80,8 @@ class FlexTreeDirective(TocTree):
         wrappernode = FlexTreeNode(
             classes=['toctree-wrapper', *self.options.get('class', ())],
         )
+        logger.debug("wrappernode")
+        logger.debug(wrappernode)
         wrappernode.append(subnode)
         self.add_name(wrappernode)
 
@@ -102,17 +104,17 @@ class FlexTreeNode(compound):
 
 import sphinx_book_theme
 
-def visit_desc_tocnode_html(self, node):
-    self.body.append('<div class="custom-toctree">')
+def visit_flextree_node_html(self, node):
+    self.body.append('<div class="flextree ">')
 
 
-def depart_desc_tocnode_html(self, node):
+def depart_flextree_node_html(self, node):
     self.body.append('</div>')
 
 
-def visit_desc_tocnode(self, node):
+def visit_flextree_node(self, node):
     pass
 
 
-def depart_desc_tocnode(self, node):
+def depart_flextree_node(self, node):
     pass
