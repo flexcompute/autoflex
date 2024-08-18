@@ -29,7 +29,6 @@ Indices and tables
 ==================
 
 .. flextree::
-   :descriptions: Desc 1, Desc 2
    :maxdepth: 2
 
    get_started

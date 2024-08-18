@@ -7,7 +7,6 @@ When we have multiple classes, and multiple inherited classes, it is hard to kee
 
 
 
-
 Development Logic
 ^^^^^^^^^^^^^^^^^
 
@@ -106,3 +105,4 @@ The goal of `pydantic` is to serialize `python`, and in a way, `sphinx` is also 
 by documenting the members corresponding to python objects. Hence, if we can provide a defined interconnect between
 the data types in `pydantic` and `sphinx`, there is a possibility for more flexible documentation accordingly.
 This would be mainly applicable primarily to serialized APIs.
+
