@@ -10,9 +10,20 @@ Build the local documentation basically:
 
     poetry run python -m sphinx docs/ _docs/
 
-It helps to be able to debug inside the ``sphinx-extension``, for this we use the ``logging`` python package, and this
-just needs to be activated in the ``conf.py`` options of a given project.
+It helps to be able to debug inside the ``sphinx-extension``, for this we use the ``logging`` python package within sphinx, and this
+just needs to be activated run based on the verbosity of the build:
 
+.. code::
+
+    poetry run python -m sphinx docs/ _docs/ -vvv # for debug logs
+
+
+Then as part of the extension we need to use accordingly:
+
+.. code::
+
+    from sphinx.util import logger
+    logger.debug("my message")
 
 Guidelines
 ----------

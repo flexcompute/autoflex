@@ -7,7 +7,8 @@
     :copyright: Copyright 2023 by daquintero <dario a quintero at gmail dot com>
     :license: BSD, see LICENSE for details.
 """
-
+from sphinx.application import Sphinx
+from sphinx.util import IO
 from typing import Any, Dict
 import pathlib
 
@@ -23,7 +24,7 @@ __author__ = "Dario Quintero Dominguez"
 __email__ = "dario a quintero at gmail dot com"
 
 
-def setup(app) -> Dict[str, Any]:
+def setup(app: Sphinx, status: IO = "DEBUG") -> Dict[str, Any]:
     """
     Configure the ``autoflex`` extension onto your project.
     """

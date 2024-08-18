@@ -1,16 +1,10 @@
 from __future__ import annotations
 
 import re
-from os.path import abspath, relpath
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING
 
 from docutils import nodes
 from docutils.parsers.rst import directives
-from docutils.parsers.rst.directives.admonitions import BaseAdmonition
-from docutils.parsers.rst.directives.misc import Class
-from docutils.parsers.rst.directives.misc import Include as BaseInclude
-from docutils.statemachine import StateMachine
 
 from sphinx import addnodes
 from sphinx.domains.changeset import VersionChange  # NoQA: F401  # for compatibility
@@ -22,12 +16,7 @@ from sphinx.util.matching import Matcher, patfilter
 from sphinx.util.nodes import explicit_title_re
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from docutils.nodes import Element, Node
-
-    from sphinx.application import Sphinx
-    from sphinx.util.typing import ExtensionMetadata, OptionSpec
+    from docutils.nodes import Node
 
 
 glob_re = re.compile(r'.*[*?\[].*')
@@ -42,6 +31,7 @@ def int_or_nothing(argument: str) -> int:
 
 class FlexTreeDirective(SphinxDirective):
     # Note most of the source code is just a modified version of the toctree
+    # Only valid from sphinx 7+
     # TODO maybe make a PR to sphinx directly.
     """
     Extension of the ``.. toctree::`` sphinx directive used to notify Sphinx about the hierarchical structure of the docs,
@@ -145,6 +135,9 @@ class FlexTreeDirective(SphinxDirective):
         for entry in self.content:
             if not entry:
                 continue
+
+            logger.debug("entry")
+            logger.debug(entry)
 
             # look for explicit titles ("Some Title <document>")
             explicit = explicit_title_re.match(entry)
