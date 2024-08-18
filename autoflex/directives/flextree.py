@@ -1,6 +1,6 @@
 from docutils.parsers.rst import Directive
 from sphinx.directives.other import TocTree
-from docutils.nodes import compound, Node
+from docutils.nodes import paragraph, compound, reference
 from sphinx import addnodes
 import logging
 
@@ -58,36 +58,65 @@ class FlexTreeDirective(TocTree):
     # required_arguments: int = 1
     # optional_arguments: int = 0
 
-    def run(self) -> list[Node]:
-        """
-        We overwrite the toctree function in order to extend it.
-        """
-        subnode = addnodes.toctree()
-        subnode['parent'] = self.env.docname
+    def run(self):
+        # Process the toctree as usual
+        toctree_nodes = super().run()
 
-        # (title, ref) pairs, where ref may be a document, or an external link,
-        # and title may be None if the document's title is to be used
-        subnode['entries'] = []
-        subnode['includefiles'] = []
-        subnode['maxdepth'] = self.options.get('maxdepth', -1)
-        subnode['caption'] = self.options.get('caption')
-        subnode['glob'] = 'glob' in self.options
-        subnode['hidden'] = 'hidden' in self.options
-        subnode['includehidden'] = 'includehidden' in self.options
-        subnode['numbered'] = self.options.get('numbered', 0)
-        subnode['titlesonly'] = 'titlesonly' in self.options
-        self.set_source_info(subnode)
-        wrappernode = FlexTreeNode(
-            classes=['toctree-wrapper', *self.options.get('class', ())],
-        )
-        logger.debug("wrappernode")
-        logger.debug(wrappernode)
-        wrappernode.append(subnode)
-        self.add_name(wrappernode)
+        # Initialize the final list of nodes to return
+        final_nodes = []
+        current_page = None
+        current_metadata = {}
 
-        ret = self.parse_content(subnode)
-        ret.append(wrappernode)
-        return ret
+        for line in self.content:
+            line = line.strip()
+
+            if not line:
+                continue
+
+            if '/' in line and ':description:' not in line:
+                # New toctree entry found, handle the previous one first
+                if current_page:
+                    final_nodes.append(self._create_node(current_page, current_metadata))
+
+                # Start a new entry
+                current_page = line
+                current_metadata = {}
+
+            elif line.startswith(':description:'):
+                current_metadata['description'] = line[len(':description:'):].strip()
+
+            elif line.startswith(':author:'):
+                current_metadata['author'] = line[len(':author:'):].strip()
+
+            elif line.startswith(':date:'):
+                current_metadata['date'] = line[len(':date:'):].strip()
+
+        # Don't forget to add the last entry
+        if current_page:
+            final_nodes.append(self._create_node(current_page, current_metadata))
+
+        # Combine toctree nodes with our custom metadata nodes
+        return toctree_nodes + final_nodes
+
+    def _create_node(self, page, metadata):
+        """Helper function to create a node for the given page and metadata."""
+        para_node = paragraph()
+        reference_node = reference(refuri=page, text=page)
+        para_node += reference_node
+
+        if 'description' in metadata:
+            description_node = paragraph(text=metadata['description'])
+            para_node += description_node
+
+        if 'author' in metadata:
+            author_node = paragraph(text=f"Author: {metadata['author']}")
+            para_node += author_node
+
+        if 'date' in metadata:
+            date_node = paragraph(text=f"Date: {metadata['date']}")
+            para_node += date_node
+
+        return para_node
 
 
 class FlexTreeNode(compound):

@@ -31,7 +31,7 @@ Indices and tables
 .. flextree::
    :maxdepth: 2
 
-   get_started
+   get_started/:description: Hello
    directives/index
    examples/index
    configuration/index

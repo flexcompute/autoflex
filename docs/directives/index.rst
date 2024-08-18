@@ -7,7 +7,7 @@ Directives
 
 .. flextree::
 
-   autoflex
-   flexsummary
-   flextree
+   autoflex/
+   flexsummary/
+   flextree/
 
