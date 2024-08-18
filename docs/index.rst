@@ -28,7 +28,7 @@ When we have highly complex classes that have multiple inherited parameters, it 
 Indices and tables
 ==================
 
-.. toctree::
+.. flextree::
    :maxdepth: 2
 
    get_started

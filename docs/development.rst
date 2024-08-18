@@ -23,7 +23,7 @@ Then as part of the extension we need to use accordingly:
 .. code::
 
     from sphinx.util import logger
-    logger.debug("my message")
+    logger.info("my message")
 
 Guidelines
 ----------
@@ -42,5 +42,5 @@ The formalism used is declaring a ``logger`` at the top of the file.
 
 .. code:
 
-    import logging
+    from sphinx.util import logger
     logger = logging.getLogger(__name__)

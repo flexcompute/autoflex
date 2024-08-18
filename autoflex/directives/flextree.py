@@ -110,7 +110,7 @@ class FlexTreeDirective(SphinxDirective):
         subnode['titlesonly'] = 'titlesonly' in self.options
         self.set_source_info(subnode)
         wrappernode = nodes.compound(
-            classes=['toctree-wrapper', *self.options.get('class', ())],
+            classes=['toctree-wrapper flextree-wrapper', *self.options.get('class', ())],
         )
         wrappernode.append(subnode)
         self.add_name(wrappernode)
@@ -123,6 +123,10 @@ class FlexTreeDirective(SphinxDirective):
         generated_docnames = frozenset(StandardDomain._virtual_doc_names)
         suffixes = self.config.source_suffix
         current_docname = self.env.docname
+
+        logger.info("current_docname")
+        logger.info(current_docname)
+
         glob = toctree['glob']
 
         # glob target documents
@@ -136,8 +140,6 @@ class FlexTreeDirective(SphinxDirective):
             if not entry:
                 continue
 
-            logger.debug("entry")
-            logger.debug(entry)
 
             # look for explicit titles ("Some Title <document>")
             explicit = explicit_title_re.match(entry)
