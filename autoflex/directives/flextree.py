@@ -1,6 +1,6 @@
 from docutils.parsers.rst import Directive
 from sphinx.directives.other import TocTree
-from docutils.nodes import paragraph, compound, reference
+from docutils.nodes import compound, Node, paragraph, reference
 from sphinx import addnodes
 import logging
 
@@ -58,17 +58,50 @@ class FlexTreeDirective(TocTree):
     # required_arguments: int = 1
     # optional_arguments: int = 0
 
-    def run(self):
-        # Initialize the final list of nodes to return
-        final_nodes = []
+    def run(self) -> list[Node]:
+        """
+        We overwrite the toctree function in order to extend it. It is difficult to extend without entering the internal
+        functionality.
+        """
+        subnode = addnodes.toctree()
+        subnode['parent'] = self.env.docname
+
+        # (title, ref) pairs, where ref may be a document, or an external link,
+        # and title may be None if the document's title is to be used
+        subnode['entries'] = []
+        subnode['includefiles'] = []
+        subnode['maxdepth'] = self.options.get('maxdepth', -1)
+        subnode['caption'] = self.options.get('caption')
+        subnode['glob'] = 'glob' in self.options
+        subnode['hidden'] = 'hidden' in self.options
+        subnode['includehidden'] = 'includehidden' in self.options
+        subnode['numbered'] = self.options.get('numbered', 0)
+        subnode['titlesonly'] = 'titlesonly' in self.options
+        self.set_source_info(subnode)
+        wrappernode = FlexTreeNode(
+            classes=['toctree-wrapper', *self.options.get('class', ())],
+        )
+        logger.debug("wrappernode")
+        logger.debug(wrappernode)
+        wrappernode.append(subnode)
+        self.add_name(wrappernode)
+
+        node_list = self.parse_content(subnode)
+        node_list.append(wrappernode)
 
         # Iterate through the content of the directive
         for entry in self.content:
             if '/' in entry:
                 # Split the entry into the page name and its description
+                logger.debug("entry")
+                logger.debug(entry)
                 parts = entry.split(':description:')
                 page = parts[0].strip()
+                logger.debug("page")
+                logger.debug(page)
                 description = parts[1].strip() if len(parts) > 1 else ""
+                logger.debug("description")
+                logger.debug(description)
 
                 # Create a reference node for the page
                 reference_node = reference(refuri=page, text=page)
@@ -82,14 +115,9 @@ class FlexTreeDirective(TocTree):
                     description_node = paragraph(text=description)
                     para_node += description_node
 
-                final_nodes.append(para_node)
+                node_list.append(para_node)
 
-        # Process the toctree as usual
-        toctree_nodes = super().run()
-
-        # Combine toctree nodes with our description nodes
-        return toctree_nodes + final_nodes
-
+        return node_list
 
 
 class FlexTreeNode(compound):
