@@ -30,7 +30,6 @@ Indices and tables
 
 .. toctree::
    :maxdepth: 2
-   :class: "test-toctree"
 
    get_started
    directives/index

@@ -46,6 +46,17 @@ Basic ``flextree`` Usage
             :description: This is the description of the page.
 
 
+.. code:: rst
+
+    .. flextree::
+        :maxdepth: 2
+
+        mypage1/
+            :image: path/to/image.png
+        mypage2/
+            :image: path/to/image.png
+
+
 Basic ``flexsummary`` Usage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

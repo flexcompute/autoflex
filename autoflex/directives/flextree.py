@@ -1,16 +1,51 @@
-from docutils.parsers.rst import Directive
-from sphinx.directives.other import TocTree
-from docutils.nodes import compound, Node, paragraph, reference
-from sphinx import addnodes
-import logging
+from __future__ import annotations
 
-# Used for debug logging
+import re
+from os.path import abspath, relpath
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, cast
+
+from docutils import nodes
+from docutils.parsers.rst import directives
+from docutils.parsers.rst.directives.admonitions import BaseAdmonition
+from docutils.parsers.rst.directives.misc import Class
+from docutils.parsers.rst.directives.misc import Include as BaseInclude
+from docutils.statemachine import StateMachine
+
+from sphinx import addnodes
+from sphinx.domains.changeset import VersionChange  # NoQA: F401  # for compatibility
+from sphinx.domains.std import StandardDomain
+from sphinx.locale import _, __
+from sphinx.util import docname_join, logging, url_re
+from sphinx.util.docutils import SphinxDirective
+from sphinx.util.matching import Matcher, patfilter
+from sphinx.util.nodes import explicit_title_re
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from docutils.nodes import Element, Node
+
+    from sphinx.application import Sphinx
+    from sphinx.util.typing import ExtensionMetadata, OptionSpec
+
+
+glob_re = re.compile(r'.*[*?\[].*')
 logger = logging.getLogger(__name__)
 
 
-class FlexTreeDirective(TocTree):
+def int_or_nothing(argument: str) -> int:
+    if not argument:
+        return 999
+    return int(argument)
+
+
+class FlexTreeDirective(SphinxDirective):
+    # Note most of the source code is just a modified version of the toctree
+    # TODO maybe make a PR to sphinx directly.
     """
-    Extension of the ``.. toctree::`` sphinx directive.
+    Extension of the ``.. toctree::`` sphinx directive used to notify Sphinx about the hierarchical structure of the docs,
+    and to include a table-of-contents like tree in the current document.
 
     Notes
     -----
@@ -37,32 +72,38 @@ class FlexTreeDirective(TocTree):
             mypage2/
                 :description: This is the description of the page.
 
+    If we want to add an image thumbnail when this is generated accordingly:
+
+    .. code::
+
+        .. flextree::
+            :maxdepth: 2
+
+            mypage1/
+                :image: path/to/image.png
+            mypage2/
+                :image: path/to/image.png
 
     """
 
-    # Directive information
-    has_content: bool = True
-
-    name: str = "flextree"
-
-    # arguments: Any = None
-    # options: Any = None
-    # content: Any = None
-    # lineno: Any = None
-    # content_offset: Any = None
-    # block_text: Any = None
-    # state: Any = None
-    # state_machine: Any = None
-    # reporter: Any = None
-    #
-    # required_arguments: int = 1
-    # optional_arguments: int = 0
+    has_content = True
+    required_arguments = 0
+    optional_arguments = 0
+    final_argument_whitespace = False
+    option_spec = {
+        'maxdepth': int,
+        'name': directives.unchanged,
+        'class': directives.class_option,
+        'caption': directives.unchanged_required,
+        'glob': directives.flag,
+        'hidden': directives.flag,
+        'includehidden': directives.flag,
+        'numbered': int_or_nothing,
+        'titlesonly': directives.flag,
+        'reversed': directives.flag,
+    }
 
     def run(self) -> list[Node]:
-        """
-        We overwrite the toctree function in order to extend it. It is difficult to extend without entering the internal
-        functionality.
-        """
         subnode = addnodes.toctree()
         subnode['parent'] = self.env.docname
 
@@ -78,65 +119,202 @@ class FlexTreeDirective(TocTree):
         subnode['numbered'] = self.options.get('numbered', 0)
         subnode['titlesonly'] = 'titlesonly' in self.options
         self.set_source_info(subnode)
-
-        wrappernode = FlexTreeNode(
+        wrappernode = nodes.compound(
             classes=['toctree-wrapper', *self.options.get('class', ())],
         )
-        logger.debug("wrappernode")
-        logger.debug(wrappernode)
-
         wrappernode.append(subnode)
         self.add_name(wrappernode)
 
-        node_list = self.parse_content(subnode)
+        ret = self.parse_content(subnode)
+        ret.append(wrappernode)
+        return ret
 
-        logger.debug("node_list")
-        logger.debug(node_list)
+    def parse_content(self, toctree: addnodes.toctree) -> list[Node]:
+        generated_docnames = frozenset(StandardDomain._virtual_doc_names)
+        suffixes = self.config.source_suffix
+        current_docname = self.env.docname
+        glob = toctree['glob']
 
-        node_list.append(wrappernode)
+        # glob target documents
+        all_docnames = self.env.found_docs.copy() | generated_docnames
+        all_docnames.remove(current_docname)  # remove current document
+        frozen_all_docnames = frozenset(all_docnames)
 
-        # Iterate through the content of the directive
+        ret: list[Node] = []
+        excluded = Matcher(self.config.exclude_patterns)
         for entry in self.content:
-            if '/' in entry:
-                # Split the entry into the page name and its description
-                logger.debug("entry")
-                logger.debug(entry)
+            if not entry:
+                continue
 
-                parts = entry.split(':description:')
-                page = parts[0].strip()
+            # look for explicit titles ("Some Title <document>")
+            explicit = explicit_title_re.match(entry)
+            url_match = url_re.match(entry) is not None
+            if glob and glob_re.match(entry) and not explicit and not url_match:
+                pat_name = docname_join(current_docname, entry)
+                doc_names = sorted(patfilter(all_docnames, pat_name))
+                for docname in doc_names:
+                    if docname in generated_docnames:
+                        # don't include generated documents in globs
+                        continue
+                    all_docnames.remove(docname)  # don't include it again
+                    toctree['entries'].append((None, docname))
+                    toctree['includefiles'].append(docname)
+                if not doc_names:
+                    logger.warning(__("toctree glob pattern %r didn't match any documents"),
+                                   entry, location=toctree)
+                continue
 
-                logger.debug("page")
-                logger.debug(page)
+            if explicit:
+                ref = explicit.group(2)
+                title = explicit.group(1)
+                docname = ref
+            else:
+                ref = docname = entry
+                title = None
 
-                description = parts[1].strip() if len(parts) > 1 else ""
+            # remove suffixes (backwards compatibility)
+            for suffix in suffixes:
+                if docname.endswith(suffix):
+                    docname = docname.removesuffix(suffix)
+                    break
 
-                logger.debug("description")
-                logger.debug(description)
+            # absolutise filenames
+            docname = docname_join(current_docname, docname)
+            if url_match or ref == 'self':
+                toctree['entries'].append((title, ref))
+                continue
 
-                # Create a reference node for the page
-                reference_node = reference(refuri=page, text=page)
+            if docname not in frozen_all_docnames:
+                if excluded(self.env.doc2path(docname, False)):
+                    message = __('toctree contains reference to excluded document %r')
+                    subtype = 'excluded'
+                else:
+                    message = __('toctree contains reference to nonexisting document %r')
+                    subtype = 'not_readable'
 
-                # Wrap it in a paragraph or list item node
-                para_node = paragraph()
-                para_node += reference_node
+                logger.warning(message, docname, type='toc', subtype=subtype,
+                               location=toctree)
+                self.env.note_reread()
+                continue
 
-                # If a description is provided, add it below the page link
-                if description:
-                    description_node = paragraph(text=description)
-                    para_node += description_node
+            if docname in all_docnames:
+                all_docnames.remove(docname)
+            else:
+                logger.warning(__('duplicated entry found in toctree: %s'), docname,
+                               location=toctree)
 
-                node_list.append(para_node)
+            toctree['entries'].append((title, docname))
+            toctree['includefiles'].append(docname)
 
-                logger.debug("para_node")
-                logger.debug(para_node)
+        # entries contains all entries (self references, external links etc.)
+        if 'reversed' in self.options:
+            toctree['entries'] = list(reversed(toctree['entries']))
+            toctree['includefiles'] = list(reversed(toctree['includefiles']))
 
-        logger.debug("node_list")
-        logger.debug(node_list)
-
-        return node_list
+        return ret
 
 
-class FlexTreeNode(compound):
+
+
+# class FlexTreeDirective(TocTree):
+#
+#     # Directive information
+#     has_content: bool = True
+#
+#     name: str = "flextree"
+#
+#     # arguments: Any = None
+#     # options: Any = None
+#     # content: Any = None
+#     # lineno: Any = None
+#     # content_offset: Any = None
+#     # block_text: Any = None
+#     # state: Any = None
+#     # state_machine: Any = None
+#     # reporter: Any = None
+#     #
+#     # required_arguments: int = 1
+#     # optional_arguments: int = 0
+#
+#     def run(self) -> list[Node]:
+#         """
+#         We overwrite the toctree function in order to extend it. It is difficult to extend without entering the internal
+#         functionality.
+#         """
+#         subnode = addnodes.toctree()
+#         subnode['parent'] = self.env.docname
+#
+#         # (title, ref) pairs, where ref may be a document, or an external link,
+#         # and title may be None if the document's title is to be used
+#         subnode['entries'] = []
+#         subnode['includefiles'] = []
+#         subnode['maxdepth'] = self.options.get('maxdepth', -1)
+#         subnode['caption'] = self.options.get('caption')
+#         subnode['glob'] = 'glob' in self.options
+#         subnode['hidden'] = 'hidden' in self.options
+#         subnode['includehidden'] = 'includehidden' in self.options
+#         subnode['numbered'] = self.options.get('numbered', 0)
+#         subnode['titlesonly'] = 'titlesonly' in self.options
+#         self.set_source_info(subnode)
+#
+#         wrappernode = FlexTreeNode(
+#             classes=['toctree-wrapper', *self.options.get('class', ())],
+#         )
+#         logger.debug("wrappernode")
+#         logger.debug(wrappernode)
+#
+#         wrappernode.append(subnode)
+#         self.add_name(wrappernode)
+#
+#         node_list = self.parse_content(subnode)
+#
+#         logger.debug("node_list")
+#         logger.debug(node_list)
+#
+#         node_list.append(wrappernode)
+#
+#         # Iterate through the content of the directive
+#         for entry in self.content:
+#             if '/' in entry:
+#                 # Split the entry into the page name and its description
+#                 logger.debug("entry")
+#                 logger.debug(entry)
+#
+#                 parts = entry.split(':description:')
+#                 page = parts[0].strip()
+#
+#                 logger.debug("page")
+#                 logger.debug(page)
+#
+#                 description = parts[1].strip() if len(parts) > 1 else ""
+#
+#                 logger.debug("description")
+#                 logger.debug(description)
+#
+#                 # Create a reference node for the page
+#                 reference_node = reference(refuri=page, text=page)
+#
+#                 # Wrap it in a paragraph or list item node
+#                 para_node = paragraph()
+#                 para_node += reference_node
+#
+#                 # If a description is provided, add it below the page link
+#                 if description:
+#                     description_node = paragraph(text=description)
+#                     para_node += description_node
+#
+#                 node_list.append(para_node)
+#
+#                 logger.debug("para_node")
+#                 logger.debug(para_node)
+#
+#         logger.debug("node_list")
+#         logger.debug(node_list)
+#
+#         return node_list
+
+
+class FlexTreeNode(nodes.compound):
     """
     Note that the node generated by a ``toctree`` is simply a ``compound`` class
     in ``docutils.nodes`` in the form:
