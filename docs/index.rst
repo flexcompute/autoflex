@@ -28,10 +28,11 @@ When we have highly complex classes that have multiple inherited parameters, it 
 Indices and tables
 ==================
 
-.. flextree::
+.. toctree::
    :maxdepth: 2
+   :class: "test-toctree"
 
-   get_started/ :description: Hello
+   get_started
    directives/index
    examples/index
    configuration/index

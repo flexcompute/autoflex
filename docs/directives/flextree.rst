@@ -81,3 +81,55 @@ When this compound class gets compiled, it generates a ``html`` in the form:
     <li class="toctree-l2"><a class="reference internal" href="get_started.html#install">Install</a></li>
     </ul>
 
+The main complexity of implementing this functionality is the desire to do it both in a modular, yet backwards compatible
+way with ``toctree``. The ideal thing would be, rather than overwrite the existing class-methods, to
+simply extend of replace the given class-methods accordingly.
+
+However, there are a few complexities in the existing ``toctree`` implementation.
+This adds some inherent complexity, as the matching code is built-in. Ideally, it would be best not to have to edit
+any code that could, for example, be modified by a given future sphinx-version, as this would be best to
+be modified directly within sphinx. However, the problem is that a toctree would still want to be constructed in a
+correct manner. This is because many other extensions use this construction, such as our theme accordingly.
+
+.. code:: python
+
+    class TocTree(SphinxDirective):
+        ...
+
+        def run(self):
+            ...
+            ret = self.parse_content(subnode)
+            ret.append(wrappernode)
+            return ret
+
+        def parse_content(self, toctree: addnodes.toctree) -> list[Node]:
+            ...
+
+            for entry in self.content:
+                if not entry:
+                    continue
+
+                # look for explicit titles ("Some Title <document>")
+                explicit = explicit_title_re.match(entry)
+                url_match = url_re.match(entry) is not None
+
+
+One way to get around this issue is to not interfere with the internal toctree matching functionality,
+and add the descriptions as a top level input, say as a given list of descriptions. The problem, unfortunately,
+is that this requires a lot of text, and the correct matching implementation.
+
+It is true that it might be convenient to overwrite the the ``parse_content`` functionality, because that gives us
+full control over the elements and construction over the relevant table of contents in an extensible manner for whatever
+other docs feature request.
+
+Hence, as such, it seems that as long as we always output the same data types as provided, we're good.
+
+In terms of just specifying the styling class of the ``toctree``, it is possible to simply add the ``:class: "test-toctree"``
+toctree option when declaring the definition, and our ``Flextree`` class can do this. It is arguable that the extra
+complexity of rewriting the toctree class can be superseded by simply attemping to implement the functionality in the simplest form.
+The problem will be parsing the description input to the toctree accordingly. Given, these descriptions, might be long paragraphs,
+and maybe we want to add images and so on, we need to improve the parsing of both these classes accordingly.
+
+
+
+

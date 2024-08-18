@@ -78,15 +78,21 @@ class FlexTreeDirective(TocTree):
         subnode['numbered'] = self.options.get('numbered', 0)
         subnode['titlesonly'] = 'titlesonly' in self.options
         self.set_source_info(subnode)
+
         wrappernode = FlexTreeNode(
             classes=['toctree-wrapper', *self.options.get('class', ())],
         )
         logger.debug("wrappernode")
         logger.debug(wrappernode)
+
         wrappernode.append(subnode)
         self.add_name(wrappernode)
 
         node_list = self.parse_content(subnode)
+
+        logger.debug("node_list")
+        logger.debug(node_list)
+
         node_list.append(wrappernode)
 
         # Iterate through the content of the directive
@@ -95,11 +101,15 @@ class FlexTreeDirective(TocTree):
                 # Split the entry into the page name and its description
                 logger.debug("entry")
                 logger.debug(entry)
+
                 parts = entry.split(':description:')
                 page = parts[0].strip()
+
                 logger.debug("page")
                 logger.debug(page)
+
                 description = parts[1].strip() if len(parts) > 1 else ""
+
                 logger.debug("description")
                 logger.debug(description)
 
@@ -116,6 +126,12 @@ class FlexTreeDirective(TocTree):
                     para_node += description_node
 
                 node_list.append(para_node)
+
+                logger.debug("para_node")
+                logger.debug(para_node)
+
+        logger.debug("node_list")
+        logger.debug(node_list)
 
         return node_list
 
