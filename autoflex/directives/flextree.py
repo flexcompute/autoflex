@@ -7,6 +7,7 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 
 from sphinx import addnodes
+from sphinx.addnodes import toctree
 from sphinx.domains.changeset import VersionChange  # NoQA: F401  # for compatibility
 from sphinx.domains.std import StandardDomain
 from sphinx.locale import _, __
@@ -100,6 +101,8 @@ class FlexTreeDirective(SphinxDirective):
         # (title, ref) pairs, where ref may be a document, or an external link,
         # and title may be None if the document's title is to be used
         subnode['entries'] = []
+        subnode['descriptions'] = []
+        subnode['images'] = []
         subnode['includefiles'] = []
         subnode['maxdepth'] = self.options.get('maxdepth', -1)
         subnode['caption'] = self.options.get('caption')
@@ -152,29 +155,16 @@ class FlexTreeDirective(SphinxDirective):
             # We want to generate the content under the title link of the entry
             if ':description:' in entry:
                 parts = entry.split(':description:')
-                page = parts[0].strip()
                 description = parts[1].strip() if len(parts) > 1 else ""
-                reference_node = nodes.reference(refuri=page, text=page)
-                para_node = nodes.paragraph()
-                para_node += reference_node
-                if description:
-                    description_node = nodes.paragraph(text=description)
-                    para_node += description_node
+                toctree['descriptions'].append((previous_entry, description))
                 continue
 
             # If an :image: is found, we generate the content accordingly
             # We want to generate the content under the title link of the entry
             if ':image:' in entry:
                 parts = entry.split(':image:')
-                page = parts[0].strip()
                 image = parts[1].strip() if len(parts) > 1 else ""
-                reference_node = nodes.reference(refuri=page, text=page)
-                para_node = nodes.paragraph()
-                para_node += reference_node
-                if image:
-                    image_node = nodes.image(uri=image)
-                    para_node += image_node
-                ret.append(para_node)
+                toctree['images'].append((previous_entry, image))
                 continue
 
             # TODO here
@@ -238,11 +228,6 @@ class FlexTreeDirective(SphinxDirective):
                 logger.warning(__('duplicated entry found in toctree: %s'), docname,
                                location=toctree)
 
-            logger.info("docname")
-            logger.info(docname)
-            logger.info("title")
-            logger.info(title)
-
             toctree['entries'].append((title, docname))
             toctree['includefiles'].append(docname)
             previous_entry = entry
@@ -251,6 +236,9 @@ class FlexTreeDirective(SphinxDirective):
         if 'reversed' in self.options:
             toctree['entries'] = list(reversed(toctree['entries']))
             toctree['includefiles'] = list(reversed(toctree['includefiles']))
+
+        logger.info("toc entries")
+        logger.info(toctree["entries"])
 
         return ret
 
@@ -269,7 +257,14 @@ class FlexTreeNode(addnodes.toctree):
     # Flextree Node for inserting a "TOC tree"
 
     def preserve_original_messages(self) -> None:
+
         # toctree entries
+        logger.info("flexnode entries")
+        logger.info(self)
+        logger.info(self['entries'])
+        logger.info(self["descriptions"])
+        logger.info(self["images"])
+
         rawentries: list[str] = self.setdefault('rawentries', [])
         for title, _docname in self['entries']:
             if title:
