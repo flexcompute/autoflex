@@ -120,6 +120,13 @@ class FlexTreeDirective(SphinxDirective):
         return ret
 
     def parse_content(self, toctree: addnodes.toctree) -> list[Node]:
+        """
+        The way this works is that each toctree entry is parsed and added to the toctree node. We consider the entry
+        as the main top level. Based on the directive content, we can add descriptions, images, and other customizations.
+        Each previous entry is stored until the next entry is found.
+
+        The main goal is to extend the toctree directive to allow for more flexibility in the way the tree is generated.
+        """
         generated_docnames = frozenset(StandardDomain._virtual_doc_names)
         suffixes = self.config.source_suffix
         current_docname = self.env.docname
@@ -133,13 +140,47 @@ class FlexTreeDirective(SphinxDirective):
 
         ret: list[Node] = []
         excluded = Matcher(self.config.exclude_patterns)
+        previous_entry = None
         for entry in self.content:
             if not entry:
                 continue
 
             # Here we need to add the extended parsing, whilst maintaining the existing titles, and being flexible
             # enough for the descriptions and images
+
+            # If a :description: is found, we generate the content accordingly
+            # We want to generate the content under the title link of the entry
+            if ':description:' in entry:
+                parts = entry.split(':description:')
+                page = parts[0].strip()
+                description = parts[1].strip() if len(parts) > 1 else ""
+                reference_node = nodes.reference(refuri=page, text=page)
+                para_node = nodes.paragraph()
+                para_node += reference_node
+                if description:
+                    description_node = nodes.paragraph(text=description)
+                    para_node += description_node
+                ret.append(para_node)
+                continue
+
+            # If an :image: is found, we generate the content accordingly
+            # We want to generate the content under the title link of the entry
+            if ':image:' in entry:
+                parts = entry.split(':image:')
+                page = parts[0].strip()
+                image = parts[1].strip() if len(parts) > 1 else ""
+                reference_node = nodes.reference(refuri=page, text=page)
+                para_node = nodes.paragraph()
+                para_node += reference_node
+                if image:
+                    image_node = nodes.image(uri=image)
+                    para_node += image_node
+                ret.append(para_node)
+                continue
+
             # TODO here
+            logger.info("entry")
+            logger.info(entry)
 
             # look for explicit titles ("Some Title <document>")
             explicit = explicit_title_re.match(entry)
@@ -200,6 +241,7 @@ class FlexTreeDirective(SphinxDirective):
 
             toctree['entries'].append((title, docname))
             toctree['includefiles'].append(docname)
+            previous_entry = entry
 
         # entries contains all entries (self references, external links etc.)
         if 'reversed' in self.options:
