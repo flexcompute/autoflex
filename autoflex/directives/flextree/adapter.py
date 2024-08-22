@@ -491,7 +491,7 @@ def _get_toctree_ancestors(
     return dict.fromkeys(ancestors).keys()
 
 
-class TocTree:
+class FlexTree:
     def __init__(self, env: BuildEnvironment) -> None:
         self.env = env
 
