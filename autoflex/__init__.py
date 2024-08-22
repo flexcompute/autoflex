@@ -10,12 +10,11 @@
 from sphinx.application import Sphinx
 from sphinx.util import IO
 from typing import Any, Dict
-import pathlib
 
 from .install import install_verification
-from autoflex.directives import AutoFlex, FlexTreeDirective
+from autoflex.directives import AutoFlex, FlexTreeDirective, FlexTreeCollector
 from autoflex.styles.setup import copy_autoflex_styles_to_static
-from autoflex.directives.flextree import FlexTreeNode, depart_flextree_node, depart_flextree_node_html, visit_flextree_node_html, visit_flextree_node
+from autoflex.directives.flextree.directive import FlexTreeNode
 from autoflex.logging import setup_logging
 
 
@@ -33,10 +32,9 @@ def setup(app: Sphinx, status: IO = "DEBUG") -> Dict[str, Any]:
     app.add_directive("autoflex", AutoFlex)
     app.add_directive("flextree", FlexTreeDirective)
 
-    app.add_node(FlexTreeNode,
-                 html=(visit_flextree_node_html, depart_flextree_node_html),
-                 latex=(visit_flextree_node, depart_flextree_node),
-                 text=(visit_flextree_node, depart_flextree_node))
+    app.add_node(FlexTreeNode)
+
+    app.add_env_collector(FlexTreeCollector)
 
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
