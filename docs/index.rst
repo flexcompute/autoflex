@@ -32,6 +32,8 @@ Indices and tables
    :maxdepth: 2
 
    get_started
+       :description: Hello this is a description.
+       :image: _static/images/demo_img.png
    directives/index
    examples/index
    configuration/index

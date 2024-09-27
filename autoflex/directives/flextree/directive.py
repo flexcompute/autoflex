@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, List, Dict, Tuple
 
 from docutils import nodes
 from docutils.parsers.rst import directives
@@ -18,62 +18,19 @@ from sphinx.util.nodes import explicit_title_re
 if TYPE_CHECKING:
     from docutils.nodes import Node
 
-
-glob_re = re.compile(r'.*[*?\[].*')
 logger = logging.getLogger(__name__)
 
+glob_re = re.compile(r'.*[*?\[].*')
 
 def int_or_nothing(argument: str) -> int:
     if not argument:
         return 999
     return int(argument)
 
-
 class FlexTreeDirective(SphinxDirective):
-    # Note most of the source code is just a modified version of the toctree
-    # Only valid from sphinx 7+
-    # TODO maybe make a PR to sphinx directly.
     """
     Extension of the ``.. toctree::`` sphinx directive used to notify Sphinx about the hierarchical structure of the docs,
-    and to include a table-of-contents like tree in the current document.
-
-    Notes
-    -----
-
-    A customizable toctree directive with options to create
-     links with descriptions, custom formatting, and interactive features. Ideally this feature should be developed
-    in an extensible way building on top of the existing ``toctree`` directive.
-
-    Usage
-    -----
-
-    The usage should be broadly compatible with the existing ``.. toctree::`` directive in the structures they represent.
-    However, there is more flexibility in the way the tree is generated and the parameters that can be passed.
-
-    To add descriptions below the given generated links, the following syntax can be used:
-
-    .. code::
-
-        .. flextree::
-            :maxdepth: 2
-
-            mypage1/
-                :description: This is the description of the page.
-            mypage2/
-                :description: This is the description of the page.
-
-    If we want to add an image thumbnail when this is generated accordingly:
-
-    .. code::
-
-        .. flextree::
-            :maxdepth: 2
-
-            mypage1/
-                :image: path/to/image.png
-            mypage2/
-                :image: path/to/image.png
-
+    and to include a table-of-contents like tree in the current document with descriptions and images.
     """
 
     has_content = True
@@ -93,15 +50,12 @@ class FlexTreeDirective(SphinxDirective):
         'reversed': directives.flag,
     }
 
-    def run(self) -> list[Node]:
+    def run(self) -> List[Node]:
         subnode = FlexTreeNode()
         subnode['parent'] = self.env.docname
 
-        # (title, ref) pairs, where ref may be a document, or an external link,
-        # and title may be None if the document's title is to be used
-        subnode['entries'] = []
-        subnode['descriptions'] = []
-        subnode['images'] = []
+        # Initialize entries as a list of dictionaries
+        subnode['entries'] = []  # List of dicts with keys: title, ref, description, image
         subnode['includefiles'] = []
         subnode['maxdepth'] = self.options.get('maxdepth', -1)
         subnode['caption'] = self.options.get('caption')
@@ -120,160 +74,135 @@ class FlexTreeDirective(SphinxDirective):
         ret = self.parse_content(subnode)
         ret.append(wrappernode)
 
-        logger.info("ret")
-        logger.info(ret)
-
         return ret
 
-    def parse_content(self, toctree: FlexTreeNode) -> list[Node]:
+    def parse_content(self, toctree: FlexTreeNode) -> List[Node]:
         """
-        The way this works is that each toctree entry is parsed and added to the toctree node. We consider the entry
-        as the main top level. Based on the directive content, we can add descriptions, images, and other customizations.
-        Each previous entry is stored until the next entry is found.
-
-        The main goal is to extend the toctree directive to allow for more flexibility in the way the tree is generated.
+        Parses the content of the directive, extracting entries and their associated descriptions and images.
         """
-        generated_docnames = frozenset(StandardDomain._virtual_doc_names)
-        suffixes = self.config.source_suffix
         current_docname = self.env.docname
-
         glob = toctree['glob']
+        all_docnames = self.env.found_docs.copy()
+        all_docnames.discard(current_docname)
 
-        # glob target documents
-        all_docnames = self.env.found_docs.copy() | generated_docnames
-        all_docnames.remove(current_docname)  # remove current document
-        frozen_all_docnames = frozenset(all_docnames)
-
-        ret: list[Node] = []
+        included = Matcher(self.config.include_patterns)
         excluded = Matcher(self.config.exclude_patterns)
-        previous_entry = None
-        for entry in self.content:
-            if not entry:
+
+        entries: List[Dict[str, Any]] = []
+
+        lines = self.content
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            if not line:
+                i += 1
                 continue
 
-            # Here we need to add the extended parsing, whilst maintaining the existing titles, and being flexible
-            # enough for the descriptions and images
+            # Check for explicit titles ("Some Title <document>")
+            explicit = explicit_title_re.match(line)
+            url_match = url_re.match(line) is not None
 
-            # If a :description: is found, we generate the content accordingly
-            # We want to generate the content under the title link of the entry
-            if ':description:' in entry:
-                parts = entry.split(':description:')
-                description = parts[1].strip() if len(parts) > 1 else ""
-                toctree['descriptions'].append((previous_entry, description))
-                continue
-
-            # If an :image: is found, we generate the content accordingly
-            # We want to generate the content under the title link of the entry
-            if ':image:' in entry:
-                parts = entry.split(':image:')
-                image = parts[1].strip() if len(parts) > 1 else ""
-                toctree['images'].append((previous_entry, image))
-                continue
-
-            # TODO here
-            logger.info("entry")
-            logger.info(entry)
-
-            # look for explicit titles ("Some Title <document>")
-            explicit = explicit_title_re.match(entry)
-            url_match = url_re.match(entry) is not None
-            if glob and glob_re.match(entry) and not explicit and not url_match:
-                pat_name = docname_join(current_docname, entry)
+            if glob and glob_re.match(line) and not explicit and not url_match:
+                # Handle glob patterns
+                pat_name = docname_join(current_docname, line)
                 doc_names = sorted(patfilter(all_docnames, pat_name))
-                for docname in doc_names:
-                    if docname in generated_docnames:
-                        # don't include generated documents in globs
-                        continue
-                    all_docnames.remove(docname)  # don't include it again
-                    toctree['entries'].append((None, docname))
-                    toctree['includefiles'].append(docname)
                 if not doc_names:
                     logger.warning(__("toctree glob pattern %r didn't match any documents"),
-                                   entry, location=toctree)
+                                   line, location=toctree)
+                for docname in doc_names:
+                    entries.append({
+                        'title': None,
+                        'ref': docname,
+                        'description': '',
+                        'image': '',
+                    })
+                    toctree['includefiles'].append(docname)
+                i += 1
                 continue
 
             if explicit:
                 ref = explicit.group(2)
                 title = explicit.group(1)
-                docname = ref
             else:
-                ref = docname = entry
+                ref = line
                 title = None
 
-            # remove suffixes (backwards compatibility)
-            for suffix in suffixes:
-                if docname.endswith(suffix):
-                    docname = docname.removesuffix(suffix)
+            # Collect description and image options
+            description = ''
+            image = ''
+            i += 1
+            while i < len(lines):
+                next_line = lines[i].strip()
+                if next_line.startswith(':description:'):
+                    description = next_line[len(':description:'):].strip()
+                elif next_line.startswith(':image:'):
+                    image = next_line[len(':image:'):].strip()
+                elif next_line.startswith(':') and not next_line.startswith('::'):
+                    # Skip other options (if any)
+                    pass
+                else:
+                    break
+                i += 1
+
+            # Remove suffixes (backwards compatibility)
+            for suffix in self.config.source_suffix:
+                if ref.endswith(suffix):
+                    ref = ref[:-len(suffix)]
                     break
 
-            # absolutise filenames
-            docname = docname_join(current_docname, docname)
+            # Absolutize filenames
+            ref = docname_join(current_docname, ref)
+
             if url_match or ref == 'self':
-                toctree['entries'].append((title, ref))
+                entries.append({
+                    'title': title,
+                    'ref': ref,
+                    'description': description,
+                    'image': image,
+                })
+                i += 1
                 continue
 
-            if docname not in frozen_all_docnames:
-                if excluded(self.env.doc2path(docname, False)):
+            if ref not in self.env.found_docs:
+                if excluded(self.env.doc2path(ref, False)):
                     message = __('toctree contains reference to excluded document %r')
                     subtype = 'excluded'
                 else:
                     message = __('toctree contains reference to nonexisting document %r')
                     subtype = 'not_readable'
-
-                logger.warning(message, docname, type='toc', subtype=subtype,
+                logger.warning(message, ref, type='toc', subtype=subtype,
                                location=toctree)
                 self.env.note_reread()
+                i += 1
                 continue
 
-            if docname in all_docnames:
-                all_docnames.remove(docname)
-            else:
-                logger.warning(__('duplicated entry found in toctree: %s'), docname,
-                               location=toctree)
+            entries.append({
+                'title': title,
+                'ref': ref,
+                'description': description,
+                'image': image,
+            })
+            toctree['includefiles'].append(ref)
+            i += 1
 
-            toctree['entries'].append((title, docname))
-            toctree['includefiles'].append(docname)
-            previous_entry = entry
-
-        # entries contains all entries (self references, external links etc.)
         if 'reversed' in self.options:
-            toctree['entries'] = list(reversed(toctree['entries']))
-            toctree['includefiles'] = list(reversed(toctree['includefiles']))
+            entries.reverse()
+            toctree['includefiles'].reverse()
 
-        logger.info("toc entries")
-        logger.info(toctree["entries"])
+        toctree['entries'] = entries
 
-        logger.info("ret at parse content")
-        logger.info(ret)
-
-        return ret
-
+        return []
 
 class FlexTreeNode(addnodes.toctree):
     """
-    Note that the node generated by a ``toctree`` is simply a ``compound`` class
-    in ``docutils.nodes`` in the form:
-
-    .. code::
-
-        compound(General, Element)
-
-    This is the type of class we want to overwrite in order to add the custom styling we are more keen on implementing.
+    FlexTree Node for inserting a "TOC tree" with descriptions and images.
     """
-    # Flextree Node for inserting a "TOC tree"
-
     def preserve_original_messages(self) -> None:
+        # Preserve original messages for translation
+        rawentries: List[str] = self.setdefault('rawentries', [])
 
-        # toctree entries
-        logger.info("flexnode entries")
-        logger.info(self)
-        logger.info(self['entries'])
-        logger.info(self["descriptions"])
-        logger.info(self["images"])
-
-        rawentries: list[str] = self.setdefault('rawentries', [])
-
-        for title, _docname in self['entries']:
+        for entry in self['entries']:
+            title = entry['title']
             if title:
                 rawentries.append(title)
 
@@ -282,21 +211,17 @@ class FlexTreeNode(addnodes.toctree):
             self['rawcaption'] = self['caption']
 
     def apply_translated_message(self, original_message: str, translated_message: str) -> None:
-        # toctree entries
-        for i, (title, docname) in enumerate(self['entries']):
-            if title == original_message:
-                self['entries'][i] = (translated_message, docname)
-
-        logger.info("flexnode entries")
-        logger.info(self)
-        logger.info(self['entries'])
+        # Apply translated messages
+        for entry in self['entries']:
+            if entry['title'] == original_message:
+                entry['title'] = translated_message
 
         # :caption: option
         if self.get('rawcaption') == original_message:
             self['caption'] = translated_message
 
-    def extract_original_messages(self) -> list[str]:
-        messages: list[str] = []
+    def extract_original_messages(self) -> List[str]:
+        messages: List[str] = []
 
         # toctree entries
         messages.extend(self.get('rawentries', []))
@@ -306,3 +231,66 @@ class FlexTreeNode(addnodes.toctree):
             messages.append(self['rawcaption'])
 
         return messages
+
+def visit_flex_treenode(self, node: FlexTreeNode) -> None:
+    """
+    Visitor function to process the FlexTreeNode during the build phase.
+    """
+    from sphinx.environment.adapters.toctree import TocTree
+
+    # Resolve the toctree entries
+    toctree = TocTree(self.builder.env).resolve(
+        node['parent'],
+        self.builder,
+        node,
+        prune=True,
+        maxdepth=node['maxdepth'],
+        titles_only=node['titlesonly'],
+        collapse=False,
+        includehidden=node['includehidden'],
+    )
+
+    if toctree:
+        # Modify the toctree to include descriptions and images
+        for entry_dict in node['entries']:
+            title = entry_dict['title']
+            ref = entry_dict['ref']
+            description = entry_dict['description']
+            image = entry_dict['image']
+
+            # Find the corresponding list_item in the toctree
+            for list_item in toctree.traverse(nodes.list_item):
+                reference = list_item.traverse(nodes.reference)
+                if reference and reference[0]['refuri'] == ref:
+                    para = list_item.children[0]
+                    # Add description if provided
+                    if description:
+                        desc_node = nodes.paragraph('', '', nodes.Text(description))
+                        para += desc_node
+
+                    # Add image if provided
+                    if image:
+                        image_node = nodes.image(uri=image)
+                        para += image_node
+                    break
+
+        self.body.append(self.starttag(node, 'div', CLASS='toctree-wrapper flextree-wrapper'))
+        self.body.append(self.starttag(toctree, 'ul', CLASS='simple'))
+        for item in toctree.children:
+            self.body.append(self.starttag(item, 'li'))
+            self.body.append(item.astext())
+            self.body.append('</li>')
+        self.body.append('</ul></div>')
+    else:
+        # If no toctree could be resolved, render nothing
+        pass
+
+    raise nodes.SkipNode
+
+def depart_flex_treenode(self, node: FlexTreeNode) -> None:
+    pass
+
+def setup(app):
+    app.add_node(FlexTreeNode, html=(visit_flex_treenode, depart_flex_treenode))
+    app.add_directive('flextree', FlexTreeDirective)
+
