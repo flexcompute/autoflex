@@ -1,0 +1,3 @@
+[submodule "packages/sphinx"]
+	path = packages/sphinx
+	url = git@github.com:daquintero/sphinx.git

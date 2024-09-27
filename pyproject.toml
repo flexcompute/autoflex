@@ -31,7 +31,7 @@ packages = [
 python = ">=3.10, <3.12"
 docutils = ">=0.16,<1.0"
 pydantic = {version="^2"}
-sphinx = {path="/home/daquintero/flexcompute/sphinx"}
+sphinx = {path="packages/sphinx"} # Note interim migration to uv structure
 
 
 # Testing, linting and docs
