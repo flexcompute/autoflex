@@ -22,6 +22,11 @@ class AutoFlex(SphinxDirective):
     The ``autoflex`` directive improves the data structure generated during the `autosummary` process
     instead of the `automodule` or `autoclass` directive.
 
+    There are three components to the autoflex class:
+    - Extract the relevant docs schema
+    - Convert that docs schema into a documentation structure data type
+    - Construct those into doctree nodes within sphinx. These are then returned to the directive declaration.
+
     Usage
     -----
 

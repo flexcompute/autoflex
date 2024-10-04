@@ -25,3 +25,5 @@ class BasicClass(pydantic.BaseModel):
         This is my static method.
         """
         pass
+
+# documenter = some_method(BasicClass)
