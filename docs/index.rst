@@ -33,6 +33,7 @@ Indices and tables
 
    get_started
    directives/index
+   types
    examples/index
    development
 
