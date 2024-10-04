@@ -12,7 +12,7 @@ from typing import Any, Dict
 import pathlib
 
 from .install import install_verification
-from autoflex.directives import AutoFlex, FlexTree
+from autoflex.directives import AutoFlex
 from autoflex.styles.setup import copy_autoflex_styles_to_static
 
 __version__ = "0.0.1"
@@ -27,7 +27,6 @@ def setup(app) -> Dict[str, Any]:
     print("Started loading `autoflex` extension.")
     # DIRECTIVES
     app.add_directive("autoflex", AutoFlex)
-    app.add_directive("flextree", FlexTree)
     # load the icon node/role
     # app.add_node(icon_node, **_NODE_VISITORS)  # type: ignore
     # app.add_role("icon", Icon())

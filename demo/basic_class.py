@@ -1,7 +1,7 @@
 import pydantic
 
 
-class MyClass(pydantic.BaseModel):
+class BasicClass(pydantic.BaseModel):
     my_parameter_1: int = 1
     my_parameter_2: str = 2
     my_parameter_3: float = 3.0

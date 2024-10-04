@@ -41,7 +41,7 @@ poetry run python -m sphinx docs/ _docs/
 Basic Example:
 
 ```rst
-.. autoflex:: somepackage.MyClass # CURRENTLY NOT WORKING
+.. autoflex:: somepackage.BasicClass # CURRENTLY NOT WORKING
 ```
 
 ## Links

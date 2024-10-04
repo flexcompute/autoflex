@@ -5,5 +5,3 @@
 .. currentmodule:: tidy3d
 
 .. autoflex:: tidy3d.Simulation
-
-hey

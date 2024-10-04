@@ -2,13 +2,11 @@ Directives
 ==========
 
 .. include:: autoflex.rst
-.. include:: flextree.rst
 .. include:: flexsummary.rst
 
-.. flextree::
+.. toctree::
    :hidden:
 
    autoflex
    flexsummary
-   flextree
 

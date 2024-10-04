@@ -1,7 +1,7 @@
 Examples
 ========
 
-.. flextree::
+.. toctree::
 
     demo
     tidy3d

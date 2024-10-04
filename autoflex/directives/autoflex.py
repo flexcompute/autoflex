@@ -1,38 +1,110 @@
-import pydantic
-from docutils.parsers import rst
-from typing import Any
-
+from typing import Any, List
 from docutils import nodes
 from docutils.parsers.rst import directives
-from sphinx.ext.autodoc import ClassDocumenter
 from sphinx.util.docutils import SphinxDirective
+from sphinx.util.logging import getLogger
+from pydantic import BaseModel
+import importlib
+import json
+
+logger = getLogger(__name__)
 
 class AutoFlex(SphinxDirective):
     """
-    Extension of the ``.. automodule::`` directive.
+    Extension of the ``.. autoflex::`` directive.
 
-     In order to mantain compatibility and extensibility with all the versions of pydantic,
-     it makes sense that this tool uses, rather than the internal pydantic class representation of the class,
-     the interconnected JSON definition of the data structure. From this generic data structure, the tool can
-        generate the documentation in a way that is compatible with the version of pydantic that is being used, or even
-        any generic data structure schema that can be generated from a given class definition.
+    In order to maintain compatibility and extensibility with all versions of Pydantic,
+    this tool uses the interconnected JSON definition of the data structure instead of the
+    internal Pydantic class representation. From this generic data structure, the tool can
+    generate documentation compatible with the Pydantic version in use or any generic data structure
+    schema derived from a class definition.
 
-     The idea is that we can use the ``autoflex`` directive to improve the data structure generated during the
-      `autosummary` process instead of the `automodule` or `autoclass` directive.
-
+    The ``autoflex`` directive improves the data structure generated during the `autosummary` process
+    instead of the `automodule` or `autoclass` directive.
 
     Usage
     -----
 
     .. code::
 
-        .. autoflex:: my_package.MyClass
-
+        .. autoflex:: my_package.BasicClass
+            :title: BasicClass Schema
+            :description: This schema represents the basic structure of the BasicClass.
     """
 
-    has_content = True
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = False
+    option_spec = {
+        'title': directives.unchanged,
+        'description': directives.unchanged,
+    }
 
-    def run(self):
-        return []
+    def run(self) -> List[nodes.Node]:
+        import_path = self.arguments[0]
+        logger.debug(f"AutoFlex processing import path: {import_path}")
 
+        try:
+            module_path, class_name = import_path.rsplit('.', 1)
+            module = importlib.import_module(module_path)
+            cls = getattr(module, class_name)
+            if not issubclass(cls, BaseModel):
+                raise TypeError(f"{import_path} is not a subclass of pydantic.BaseModel")
+        except (ImportError, AttributeError, ValueError, TypeError) as e:
+            logger.error(f"AutoFlex directive error: {e}")
+            error = self.state_machine.reporter.error(
+                f'AutoFlex directive error: {e}',
+                nodes.literal_block(self.block_text, self.block_text),
+                line=self.lineno
+            )
+            return [error]
 
+        try:
+            schema_dict = cls.schema()
+        except Exception as e:
+            logger.error(f"Error generating schema for {import_path}: {e}")
+            error = self.state_machine.reporter.error(
+                f'Error generating schema for {import_path}: {e}',
+                nodes.literal_block(self.block_text, self.block_text),
+                line=self.lineno
+            )
+            return [error]
+
+        # Generate documentation nodes from the schema
+        nodes_list = []
+
+        # Create a unique section ID to prevent conflicts
+        section_id = f'autoflex-{class_name.lower()}'
+        section_node = nodes.section(ids=[section_id])
+
+        # Title
+        title_text = self.options.get('title', f"Schema for `{class_name}`")
+        title_node = nodes.title(text=title_text)
+        section_node += title_node
+
+        # Description
+        description = self.options.get('description', schema_dict.get('description', ''))
+        if description:
+            description_node = nodes.paragraph(text=description)
+            section_node += description_node
+
+        # JSON Schema as a literal block
+        try:
+            schema_json = json.dumps(schema_dict, indent=2)
+        except (TypeError, ValueError) as e:
+            logger.error(f"Error serializing schema for {import_path}: {e}")
+            error = self.state_machine.reporter.error(
+                f'Error serializing schema for {import_path}: {e}',
+                nodes.literal_block(self.block_text, self.block_text),
+                line=self.lineno
+            )
+            return [error]
+
+        literal = nodes.literal_block(schema_json, schema_json)
+        literal['language'] = 'json'
+        section_node += literal
+
+        nodes_list.append(section_node)
+
+        return nodes_list
