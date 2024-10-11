@@ -1,9 +1,9 @@
 """
 This file contains the structure of a ParameterTable.
 """
-from autoflex.types import ParameterTable
+from autoflex.types import AutoflexBaseClass
 
-def extract_class_to_parameter_table() -> ParameterTable:
+def extract_class_to_parameter_table(physcial_parameter: PhysicalParameter) -> ParameterTable:
     """
     This method converts from a given class or schema declaration into a container of data required for a ParameterTable
     in its intended implementation.
