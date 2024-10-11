@@ -22,4 +22,3 @@ In your documentation project ``conf.py``:
    ]
 
 That's it!
-

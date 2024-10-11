@@ -19,21 +19,27 @@ Objectives
 - For inherited classes, have the option to easily define the methods and parameters that we want to generate documentation for.
 - Have the option to generate custom HTML relevant to each class in a way defined by the class docstring.
 - Make sure the docstrings don't interfere with help messages such as ipython, etc. (Maybe explore how to compile relevant docstrings into the help messages).
-
+\
 **API Docstrings Improvements**
 
 When we have highly complex classes that have multiple inherited parameters, it is desired to have a clear definition of each specific class and its parameters, types, and defaults. Whilst this can be done manually for an individual class or method, as a project increases in complexity, it is desired to understand the relevant docstrings for each class and method.
 
+Implementation Methodology
+===========================
+
+- Validated static data container ``Descriptor`` types are used to construct the structures which are represented in HTML.
+- Automated sphinx extensions is used to extract the corresponding data types from a given class implementation.
 
 Indices and tables
 ==================
 
-.. flextree::
+.. toctree::
    :maxdepth: 2
 
    get_started
    directives/index
-   types
+   structure
+   api/index
    examples/index
    development
 
