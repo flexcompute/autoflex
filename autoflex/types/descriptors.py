@@ -1,20 +1,12 @@
 """
 This contains all the relevant types used for the documentation constructors and base definition.
 """
-
-from pydantic import BaseModel, validator, Field
+import pydantic.fields
+from pydantic import Field
 from typing import Union
+from autoflex.types.core import AutoflexBaseModel
 
-
-class AutoflexBaseClass(BaseModel):
-    """
-    A base class that can be used for any model within the system.
-    It inherits from Pydantic's BaseModel to leverage data validation
-    and parsing features.
-    """
-
-
-class Symbolic(AutoflexBaseClass):
+class Symbolic(AutoflexBaseModel):
     """
     A class representing a symbolic representation of a label and math formula.
 
@@ -25,7 +17,8 @@ class Symbolic(AutoflexBaseClass):
     label: str = Field(..., description="Label of the symbolic representation")
     math: str = Field(..., description="Mathematical representation or equation")
 
-class Unit(AutoflexBaseClass):
+
+class Unit(AutoflexBaseModel):
     """
     A class representing a physical unit.
 
@@ -38,8 +31,7 @@ class Unit(AutoflexBaseClass):
     symbol: str | Symbolic = Field(..., description="Symbol for the unit")
     description: str = Field(None, description="Optional description of the unit")
 
-
-class PhysicalParameter(AutoflexBaseClass):
+class PhysicalParameter(AutoflexBaseModel):
     """
     A class representing a physical parameter, which includes both
     the unit and its defining mathematical representation.
@@ -51,23 +43,8 @@ class PhysicalParameter(AutoflexBaseClass):
     unit: Union[str, Symbolic, Unit] = Field(..., description="The unit of the physical parameter")
     math: Union[str, Symbolic] = Field(..., description="The mathematical representation defining the physical parameter in latex")
 
-#
-# class AttributeDocumentation(AutoflexBaseClass):
-#     name: str
-#     units: Unit
-#     types: pydantic.BaseModel
-#
-# class MethodDocumentationSchema(AutoflexBaseClass):
-#     name: str
-#     description: str
-#
-#
-# class ClassDocumentation(AutoflexBaseClass):
-#     """
-#
-#     """
-#     attribute_list = list[AttributeDocumentation]
-#     method_list = list[MethodDocumentationSchema]
-#
-# class ParameterTable(AutoflexBaseClass):
-#     pass
+AutoflexParameterTypes = PhysicalParameter
+
+
+class AutoflexFieldInfo(pydantic.fields.FieldInfo):
+    autoflex: AutoflexParameterTypes
