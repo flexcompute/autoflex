@@ -38,7 +38,8 @@ Indices and tables
 
    get_started
    directives/index
-   types
+   structure
+   api/index
    examples/index
    development
 
