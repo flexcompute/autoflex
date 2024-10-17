@@ -6,9 +6,6 @@ from pydantic import Field
 from typing import Union
 from autoflex.types.core import AutoflexBaseModel
 
-
-
-
 class Symbolic(AutoflexBaseModel):
     """
     A class representing a symbolic representation of a label and math formula.

@@ -10,11 +10,8 @@ Usage Overview
     * - ``autoflex``
       - Our very extensible, automatic API documentation generator for classes.
       -
-    * - ``flextree``
-      - A customizable ``toctree`` directive with options to create links with descriptions, custom formatting, and interactive features.
-      - https://github.com/flexcompute/autoflex/issues/10
     * - ``flexsummary``
-      - A customizable ``autosummary`` directive.
+      - A customizable ``autosummary`` directive using ``autoflex`` constructors.
       - https://github.com/flexcompute/autoflex/issues/10
 
 
@@ -30,20 +27,6 @@ You need to make sure you've delclared the relevant top path of the module you'r
    .. currentmodule:: tidy3d
 
    .. autoflex:: tidy3d.Simulation
-
-
-Basic ``flextree`` Usage
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code:: rst
-
-    .. flextree::
-        :maxdepth: 2
-
-        mypage1/
-            :description: This is the description of the page.
-        mypage2/
-            :description: This is the description of the page.
 
 
 Basic ``flexsummary`` Usage
