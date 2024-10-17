@@ -1,5 +1,5 @@
-Software Architecture Structure
-================================
+Implementation Structure
+=========================
 
 ``autoflex`` is divided in the following conceptual structure:
 

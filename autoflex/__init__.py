@@ -14,6 +14,7 @@ import pathlib
 from .install import install_verification
 from autoflex.directives import AutoFlex
 from autoflex.styles.setup import copy_autoflex_styles_to_static
+from autoflex.extractors import determine_pydantic_version_from_base_model, get_field_infos
 
 __version__ = "0.0.1"
 __author__ = "Dario Quintero Dominguez"

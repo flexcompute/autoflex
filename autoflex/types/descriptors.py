@@ -18,6 +18,8 @@ class Symbolic(AutoflexBaseModel):
     math: str = Field(..., description="Mathematical representation or equation")
 
 
+SymbolicTypes = Union[str, Symbolic]
+
 class Unit(AutoflexBaseModel):
     """
     A class representing a physical unit.
@@ -28,23 +30,5 @@ class Unit(AutoflexBaseModel):
         description: An optional description of the unit.
     """
     name: str = Field(..., description="Name of the unit")
-    symbol: str | Symbolic = Field(..., description="Symbol for the unit")
+    symbol: SymbolicTypes = Field(..., description="Symbol for the unit")
     description: str = Field(None, description="Optional description of the unit")
-
-class PhysicalParameter(AutoflexBaseModel):
-    """
-    A class representing a physical parameter, which includes both
-    the unit and its defining mathematical representation.
-
-    Attributes:
-        unit: Can either be a simple string, Symbolic class, or Unit class representing the unit.
-        equation: The equation associated with the physical parameter, which could be symbolic or a string.
-    """
-    unit: Union[str, Symbolic, Unit] = Field(..., description="The unit of the physical parameter")
-    math: Union[str, Symbolic] = Field(..., description="The mathematical representation defining the physical parameter in latex")
-
-AutoflexParameterTypes = PhysicalParameter
-
-
-class AutoflexFieldInfo(pydantic.fields.FieldInfo):
-    autoflex: AutoflexParameterTypes
