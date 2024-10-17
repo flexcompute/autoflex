@@ -33,7 +33,7 @@ Implementation Methodology
 Indices and tables
 ==================
 
-.. flextree::
+.. toctree::
    :maxdepth: 2
 
    get_started

@@ -3,7 +3,7 @@ Software Architecture Structure
 
 ``autoflex`` is divided in the following conceptual structure:
 
-.. raw::
+.. code-block::
 
     Descriptors
     Structures
