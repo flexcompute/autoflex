@@ -23,7 +23,8 @@ classifiers = [
     "Topic :: Utilities"
 ]
 packages = [
-    { include = "autoflex", from = "." }
+    { include = "autoflex", from = "." },
+    { include = "demo", from = "." }
 ]
 
 
