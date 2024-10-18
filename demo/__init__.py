@@ -1,1 +1,1 @@
-from .basic_class import BasicClass
+from .basic_class import BasicClass, BasicMixedAnnotatedClass

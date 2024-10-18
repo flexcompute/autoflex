@@ -1,33 +1,35 @@
-from dataclasses import field
 from typing import Any, Optional
 from pydantic import Field
-from autoflex.types import AutoflexFieldInfo, AutoflexParameterTypes
+from autoflex.types import PhysicalFieldInfo, UnitTypes, SymbolicTypes
 
 
-def AutoflexField(
+def PhysicalField(
     default: Any = ...,
     *,
-    autoflex_parameters: Optional[AutoflexParameterTypes] = None,
+    unit: UnitTypes,
+    math: SymbolicTypes,
     **kwargs
-) -> AutoflexFieldInfo:
+) -> PhysicalFieldInfo:
     """
     A wrapper around pydantic's Field function that returns an instance of AutoflexFieldInfo
     instead of FieldInfo.
 
     Args:
         default: The default value of the field.
-        autoflex_parameters: An additional argument specific to AutoflexFieldInfo.
+        unit: The UnitType to represent.
+        math: The SymbolicType to represent.
         **kwargs: Any other keyword arguments passed to pydantic's Field.
 
     Returns:
         AutoflexFieldInfo: Custom field info object.
     """
 
-    field_info = Field(default=default, **kwargs)  # Call pydantic's Field internally
+    # Need to compile this into a FieldInfo in order to extract the correct kwargs.
+    field_info = Field(default=default, **kwargs)
 
     # Return an instance of AutoflexFieldInfo instead of the default FieldInfo
-    return AutoflexFieldInfo(
+    return PhysicalFieldInfo(
         default=default,
-        autoflex=autoflex_parameters,
-        **field_info.dict(exclude_none=True)
+        unit=unit,
+        math=math,
     )

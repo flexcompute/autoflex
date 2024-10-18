@@ -32,3 +32,5 @@ class Unit(AutoflexBaseModel):
     name: str = Field(..., description="Name of the unit")
     symbol: SymbolicTypes = Field(..., description="Symbol for the unit")
     description: str = Field(None, description="Optional description of the unit")
+
+UnitTypes = Union[str, Unit]
