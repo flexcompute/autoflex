@@ -69,3 +69,10 @@ Each of our constructors might have a physical meaning assigned to them. This is
 operators as symbolic terms.
 
 As such, we don't want to overwrite the existing documentation functionality we like such as doctree declarations.
+
+
+Properties
+-----------
+
+These are extended type definitions of standard Python class properties. In this case, we may want to encode physical units,
+math and possibly more which we can compile into a larger documentation structure.

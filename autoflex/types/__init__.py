@@ -1,3 +1,4 @@
-from autoflex.types.parameters import PhysicalParameter, AutoflexParameterTypes
-from autoflex.types.descriptors import Unit, Symbolic, SymbolicTypes
-from autoflex.types.field import AutoflexFieldInfo
+from autoflex.types.property import PhysicalProperty, Property, PropertyTypes
+from autoflex.types.descriptors import Symbolic, SymbolicTypes, Unit, UnitTypes
+from autoflex.types.field_info import PhysicalFieldInfo, FieldTypes
+from autoflex.types.field_info import PhysicalFieldInfo
