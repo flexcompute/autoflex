@@ -80,12 +80,12 @@ class AutoFlex(SphinxDirective):
         title_text = self.options.get('title', f"Schema for `{class_name}`")
         title_node = nodes.title(text=title_text)
         section_node += title_node
-        #
-        # # Description
-        # description = self.options.get('description', schema_dict.get('description', ''))
-        # if description:
-        #     description_node = nodes.paragraph(text=description)
-        #     section_node += description_node
+
+        # Description
+        description = self.options.get('description', cls.__doc__)
+        if description:
+            description_node = nodes.paragraph(text=description)
+            section_node += description_node
         #
         # # JSON Schema as a literal block
         # try:
@@ -114,8 +114,10 @@ class AutoFlex(SphinxDirective):
         #             default=str(prop_info.get('default', ''))
         #         ))
 
-        # table_node = model_to_property_table_nodes(cls())
-        # section_node += table_node
+        logger.debug("Before building property table.")
+        table_node = model_to_property_table_nodes(cls())
+        logger.debug("After building property table.")
+        section_node += table_node
 
         nodes_list.append(section_node)
 

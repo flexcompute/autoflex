@@ -19,17 +19,16 @@ def model_to_property_table_nodes(model: BaseModel) -> nodes.table:
 def create_property_table(properties: PropertyCollectionTable):
     # Define a list of table columns
     table_head = [
-        ["Name", "Description"],
-        ["Units", "Symbolic", "Types", "Default"]
+        ["Name", "Description", "Units", "Symbolic", "Types", "Default"]
     ]
 
     # Create the table node
     table = nodes.table()
-    tgroup = nodes.tgroup(cols=4)
+    tgroup = nodes.tgroup(cols=6)
     table += tgroup
 
     # Define column specifications
-    for _ in range(4):
+    for _ in range(6):
         tgroup += nodes.colspec(colwidth=1)
 
     thead = nodes.thead()
@@ -37,19 +36,18 @@ def create_property_table(properties: PropertyCollectionTable):
     tbody = nodes.tbody()
     tgroup += tbody
 
-    # Fill in the header rows
-    for head_row in table_head:
-        row = nodes.row()
-        for header in head_row:
-            entry = nodes.entry()
-            entry += nodes.paragraph(text=header)
-            row += entry
-        thead += row
+    # Fill in the header row
+    row = nodes.row()
+    for header in table_head[0]:
+        entry = nodes.entry()
+        entry += nodes.paragraph(text=header)
+        row += entry
+    thead += row
 
     # Fill in the property rows
     for prop in properties:
-        print(prop)
         row = nodes.row()
+
         # Add property name
         entry = nodes.entry()
         entry += nodes.paragraph(text=prop.name)
@@ -60,7 +58,6 @@ def create_property_table(properties: PropertyCollectionTable):
         entry += nodes.paragraph(text=prop.description)
         row += entry
 
-        # Add units (if it's a PhysicalProperty)
         # Check if it's a PhysicalProperty by checking for `math` and `unit` attributes
         if hasattr(prop, 'math') and hasattr(prop, 'unit'):
             # Add units
@@ -74,13 +71,10 @@ def create_property_table(properties: PropertyCollectionTable):
             row += entry
         else:
             # Add empty cells for units and symbolic if it's not a PhysicalProperty
-            entry = nodes.entry()
-            entry += nodes.paragraph(text="")
-            row += entry
-
-            entry = nodes.entry()
-            entry += nodes.paragraph(text="")
-            row += entry
+            for _ in range(2):
+                entry = nodes.entry()
+                entry += nodes.paragraph(text="")
+                row += entry
 
         # Add types
         entry = nodes.entry()
@@ -96,3 +90,4 @@ def create_property_table(properties: PropertyCollectionTable):
         tbody += row
 
     return table
+
