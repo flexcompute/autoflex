@@ -4,6 +4,7 @@ from docutils.parsers.rst import directives
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.logging import getLogger
 from pydantic import BaseModel
+from pydantic.v1 import BaseModel as BaseModelV1
 import importlib
 import json
 
@@ -58,8 +59,8 @@ class AutoFlex(SphinxDirective):
             module = importlib.import_module(module_path)
             cls = getattr(module, class_name)
             print(cls)
-            if not issubclass(cls, BaseModel):
-                raise TypeError(f"{import_path} is not a subclass of pydantic.BaseModel")
+            # if (not issubclass(cls, BaseModel)) or (not issubclass(cls, BaseModelV1)):
+            #     raise TypeError(f"{import_path} is not a subclass of pydantic.BaseModel")
         except (ImportError, AttributeError, ValueError, TypeError) as e:
             logger.error(f"AutoFlex directive error: {e}")
             error = self.state_machine.reporter.error(
@@ -67,7 +68,8 @@ class AutoFlex(SphinxDirective):
                 nodes.literal_block(self.block_text, self.block_text),
                 line=self.lineno
             )
-            return [error]
+            # return [error]
+            pass
 
         # Generate documentation nodes from the schema
         nodes_list = []
@@ -115,7 +117,7 @@ class AutoFlex(SphinxDirective):
         #         ))
 
         logger.debug("Before building property table.")
-        table_node = model_to_property_table_nodes(cls())
+        table_node = model_to_property_table_nodes(cls)
         logger.debug("After building property table.")
         section_node += table_node
 
