@@ -7,6 +7,9 @@ from pydantic import BaseModel
 import importlib
 import json
 
+from autoflex.types import Property
+from autoflex.constructors.parameter_table import create_property_table
+
 logger = getLogger(__name__)
 
 class AutoFlex(SphinxDirective):
@@ -109,6 +112,21 @@ class AutoFlex(SphinxDirective):
         literal = nodes.literal_block(schema_json, schema_json)
         literal['language'] = 'json'
         section_node += literal
+
+        # Generate the property table if applicable
+        properties = []
+        for prop_name, prop_info in schema_dict.get('properties', {}).items():
+            if 'type' in prop_info:
+                properties.append(Property(
+                    name=prop_name,
+                    types=prop_info['type'],
+                    description=prop_info.get('description', ''),
+                    default=str(prop_info.get('default', ''))
+                ))
+
+        if properties:
+            table_node = create_property_table(properties)
+            section_node += table_node
 
         nodes_list.append(section_node)
 
