@@ -6,7 +6,7 @@ from autoflex.types import PropertyCollectionTable
 from autoflex.extractors import extract_property_list_from_model
 from docutils import nodes
 
-def extract_class_to_property_table_nodes(model: BaseModel) -> nodes.table:
+def model_to_property_table_nodes(model: BaseModel) -> nodes.table:
     """
     This method converts from a given class or schema declaration into a container of data required for a ParameterTable
     in its intended implementation.
@@ -52,12 +52,12 @@ def create_property_table(properties: PropertyCollectionTable):
         row = nodes.row()
         # Add property name
         entry = nodes.entry()
-        entry += nodes.paragraph(text=prop["name"])
+        entry += nodes.paragraph(text=prop.name)
         row += entry
 
         # Add property description
         entry = nodes.entry()
-        entry += nodes.paragraph(text=prop["description"])
+        entry += nodes.paragraph(text=prop.description)
         row += entry
 
         # Add units (if it's a PhysicalProperty)
@@ -84,12 +84,12 @@ def create_property_table(properties: PropertyCollectionTable):
 
         # Add types
         entry = nodes.entry()
-        entry += nodes.paragraph(text=prop["types"])
+        entry += nodes.paragraph(text=prop.types)
         row += entry
 
         # Add default
         entry = nodes.entry()
-        entry += nodes.paragraph(text=prop["default"])
+        entry += nodes.paragraph(text=prop.default)
         row += entry
 
         # Append row to the body

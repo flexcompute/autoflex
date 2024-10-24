@@ -8,7 +8,7 @@ import importlib
 import json
 
 from autoflex.types import Property
-from autoflex.constructors.parameter_table import create_property_table
+from autoflex.constructors.parameter_table import create_property_table, model_to_property_table_nodes
 
 logger = getLogger(__name__)
 
@@ -57,23 +57,13 @@ class AutoFlex(SphinxDirective):
             module_path, class_name = import_path.rsplit('.', 1)
             module = importlib.import_module(module_path)
             cls = getattr(module, class_name)
+            print(cls)
             if not issubclass(cls, BaseModel):
                 raise TypeError(f"{import_path} is not a subclass of pydantic.BaseModel")
         except (ImportError, AttributeError, ValueError, TypeError) as e:
             logger.error(f"AutoFlex directive error: {e}")
             error = self.state_machine.reporter.error(
                 f'AutoFlex directive error: {e}',
-                nodes.literal_block(self.block_text, self.block_text),
-                line=self.lineno
-            )
-            return [error]
-
-        try:
-            schema_dict = cls.schema()
-        except Exception as e:
-            logger.error(f"Error generating schema for {import_path}: {e}")
-            error = self.state_machine.reporter.error(
-                f'Error generating schema for {import_path}: {e}',
                 nodes.literal_block(self.block_text, self.block_text),
                 line=self.lineno
             )
@@ -90,43 +80,42 @@ class AutoFlex(SphinxDirective):
         title_text = self.options.get('title', f"Schema for `{class_name}`")
         title_node = nodes.title(text=title_text)
         section_node += title_node
+        #
+        # # Description
+        # description = self.options.get('description', schema_dict.get('description', ''))
+        # if description:
+        #     description_node = nodes.paragraph(text=description)
+        #     section_node += description_node
+        #
+        # # JSON Schema as a literal block
+        # try:
+        #     schema_json = json.dumps(schema_dict, indent=2)
+        # except (TypeError, ValueError) as e:
+        #     logger.error(f"Error serializing schema for {import_path}: {e}")
+        #     error = self.state_machine.reporter.error(
+        #         f'Error serializing schema for {import_path}: {e}',
+        #         nodes.literal_block(self.block_text, self.block_text),
+        #         line=self.lineno
+        #     )
+        #     return [error]
+        #
+        # literal = nodes.literal_block(schema_json, schema_json)
+        # literal['language'] = 'json'
+        # section_node += literal
+        #
+        # # Generate the property table if applicable
+        # properties = []
+        # for prop_name, prop_info in schema_dict.get('properties', {}).items():
+        #     if 'type' in prop_info:
+        #         properties.append(Property(
+        #             name=prop_name,
+        #             types=prop_info['type'],
+        #             description=prop_info.get('description', ''),
+        #             default=str(prop_info.get('default', ''))
+        #         ))
 
-        # Description
-        description = self.options.get('description', schema_dict.get('description', ''))
-        if description:
-            description_node = nodes.paragraph(text=description)
-            section_node += description_node
-
-        # JSON Schema as a literal block
-        try:
-            schema_json = json.dumps(schema_dict, indent=2)
-        except (TypeError, ValueError) as e:
-            logger.error(f"Error serializing schema for {import_path}: {e}")
-            error = self.state_machine.reporter.error(
-                f'Error serializing schema for {import_path}: {e}',
-                nodes.literal_block(self.block_text, self.block_text),
-                line=self.lineno
-            )
-            return [error]
-
-        literal = nodes.literal_block(schema_json, schema_json)
-        literal['language'] = 'json'
-        section_node += literal
-
-        # Generate the property table if applicable
-        properties = []
-        for prop_name, prop_info in schema_dict.get('properties', {}).items():
-            if 'type' in prop_info:
-                properties.append(Property(
-                    name=prop_name,
-                    types=prop_info['type'],
-                    description=prop_info.get('description', ''),
-                    default=str(prop_info.get('default', ''))
-                ))
-
-        if properties:
-            table_node = create_property_table(properties)
-            section_node += table_node
+        # table_node = model_to_property_table_nodes(cls())
+        # section_node += table_node
 
         nodes_list.append(section_node)
 
